@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}仪表板 - AiMusPal{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">学习仪表板</h1>
+    
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-music fs-1 text-primary"></i>
+                    <h5 class="card-title mt-2">练习次数</h5>
+                    <h3 class="text-primary">{{ stats.total_practices or 0 }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-clock fs-1 text-success"></i>
+                    <h5 class="card-title mt-2">练习时长</h5>
+                    <h3 class="text-success">{{ stats.total_time or '0' }}小时</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-star fs-1 text-warning"></i>
+                    <h5 class="card-title mt-2">平均分数</h5>
+                    <h3 class="text-warning">{{ stats.average_score or '0' }}分</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-trophy fs-1 text-info"></i>
+                    <h5 class="card-title mt-2">本月目标</h5>
+                    <h3 class="text-info">{{ stats.monthly_goal or '10' }}次</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5>最近练习记录</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">练习记录将在此显示...</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>推荐练习</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">个性化推荐将在此显示...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

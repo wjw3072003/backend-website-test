@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}练习曲目 - AiMusPal{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>练习曲目</h1>
+        <div>
+            <select class="form-select" id="difficulty-filter">
+                <option value="">所有难度</option>
+                <option value="1">初级</option>
+                <option value="2">中级</option>
+                <option value="3">高级</option>
+            </select>
+        </div>
+    </div>
+    
+    <div class="row">
+        {% if practices %}
+            {% for practice in practices %}
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ practice.title }}</h5>
+                        <p class="card-text">
+                            <strong>作曲家:</strong> {{ practice.composer }}<br>
+                            <strong>难度:</strong> 
+                            {% for i in range(practice.difficulty_level) %}
+                                <i class="fas fa-star text-warning"></i>
+                            {% endfor %}
+                            {% for i in range(10 - practice.difficulty_level) %}
+                                <i class="far fa-star text-muted"></i>
+                            {% endfor %}
+                            <br>
+                            <strong>风格:</strong> {{ practice.genre }}
+                        </p>
+                        <p class="card-text text-muted">{{ practice.description }}</p>
+                    </div>
+                    <div class="card-footer">
+                        <button class="btn btn-primary btn-sm">开始练习</button>
+                        <button class="btn btn-outline-secondary btn-sm">查看详情</button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-info text-center">
+                    <i class="fas fa-info-circle fa-2x mb-3"></i>
+                    <h4>暂无练习曲目</h4>
+                    <p>管理员还未添加练习曲目，请稍后再来查看。</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

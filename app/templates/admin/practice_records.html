@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}练习记录 - 管理后台{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <!-- 侧边栏 -->
+        <div class="col-md-3 col-lg-2 px-0">
+            <div class="bg-light sidebar py-3">
+                <div class="list-group list-group-flush">
+                    <a href="{{ url_for('admin.dashboard') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-tachometer-alt me-2"></i>仪表板
+                    </a>
+                    <a href="{{ url_for('admin.users') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-users me-2"></i>用户管理
+                    </a>
+                    <a href="{{ url_for('admin.practices') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-music me-2"></i>练习管理
+                    </a>
+                    <a href="{{ url_for('admin.practice_records') }}" class="list-group-item list-group-item-action active">
+                        <i class="fas fa-history me-2"></i>练习记录
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 主内容区 -->
+        <div class="col-md-9 col-lg-10">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">练习记录</h1>
+            </div>
+
+            <!-- 练习记录列表 -->
+            <div class="card shadow">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>用户</th>
+                                    <th>练习曲目</th>
+                                    <th>分数</th>
+                                    <th>练习时间</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in records %}
+                                <tr>
+                                    <td>{{ record.id }}</td>
+                                    <td>{{ record.user.username if record.user else '-' }}</td>
+                                    <td>{{ record.practice.title if record.practice else '-' }}</td>
+                                    <td>{{ record.score or '-' }}</td>
+                                    <td>{{ record.created_at.strftime('%Y-%m-%d %H:%M') if record.created_at else '-' }}</td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted">暂无练习记录</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.sidebar {
+    position: fixed;
+    top: 56px;
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    padding: 0;
+    box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+}
+
+.sidebar .list-group-item {
+    border-radius: 0;
+    border: none;
+    border-bottom: 1px solid rgba(0, 0, 0, .125);
+}
+</style>
+{% endblock %} 
