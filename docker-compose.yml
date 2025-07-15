@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - DATABASE_URL=mysql+pymysql://aimuspal:password123@db:3306/aimuspal_db
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=your-secret-key-change-in-production
+      - JWT_SECRET_KEY=your-jwt-secret-key-change-in-production
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./uploads:/app/uploads
+    restart: unless-stopped
+
+  db:
+    image: mysql:8.0
+    environment:
+      - MYSQL_DATABASE=aimuspal_db
+      - MYSQL_USER=aimuspal
+      - MYSQL_PASSWORD=password123
+      - MYSQL_ROOT_PASSWORD=rootpassword123
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  adminer:
+    image: adminer
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+
+volumes:
+  mysql_data:
+  redis_data:

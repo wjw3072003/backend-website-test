@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block title %}AiMusPal - AI音乐教育平台{% endblock %}
+
+{% block content %}
+<!-- 主横幅 -->
+<section class="bg-primary text-white py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4">AiMusPal</h1>
+                <h2 class="h3 mb-4">智能音乐教育平台</h2>
+                <p class="lead mb-4">
+                    使用AI技术分析您的音乐练习，提供个性化反馈，让音乐学习更高效、更有趣。
+                </p>
+                <div class="d-flex gap-3">
+                    {% if not current_user.is_authenticated %}
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-light btn-lg">
+                        <i class="fas fa-user-plus"></i> 立即注册
+                    </a>
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-sign-in-alt"></i> 登录
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('main.dashboard') }}" class="btn btn-light btn-lg">
+                        <i class="fas fa-tachometer-alt"></i> 进入仪表板
+                    </a>
+                    <a href="{{ url_for('main.practices') }}" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-music"></i> 开始练习
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                <i class="fas fa-robot display-1 text-light opacity-75"></i>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 特色功能 -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="h1 mb-3">平台特色</h2>
+            <p class="lead text-muted">AI驱动的音乐教育解决方案</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="bg-primary bg-gradient rounded-circle d-inline-flex align-items-center justify-content-center mb-4" style="width: 80px; height: 80px;">
+                            <i class="fas fa-brain text-white fs-1"></i>
+                        </div>
+                        <h4 class="card-title">AI智能分析</h4>
+                        <p class="card-text text-muted">
+                            先进的AI技术实时分析您的演奏，从节拍、音准、节奏等多个维度提供精准评估。
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="bg-success bg-gradient rounded-circle d-inline-flex align-items-center justify-content-center mb-4" style="width: 80px; height: 80px;">
+                            <i class="fas fa-comments text-white fs-1"></i>
+                        </div>
+                        <h4 class="card-title">个性化反馈</h4>
+                        <p class="card-text text-muted">
+                            根据您的演奏水平和学习进度，提供量身定制的练习建议和改进方案。
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="bg-info bg-gradient rounded-circle d-inline-flex align-items-center justify-content-center mb-4" style="width: 80px; height: 80px;">
+                            <i class="fas fa-chart-line text-white fs-1"></i>
+                        </div>
+                        <h4 class="card-title">学习追踪</h4>
+                        <p class="card-text text-muted">
+                            详细记录您的学习历程，可视化展示进步轨迹，让每一次练习都有明确目标。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 工作流程 -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="h1 mb-3">如何使用</h2>
+            <p class="lead text-muted">简单三步，开启智能音乐学习之旅</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4 text-center">
+                <div class="mb-4">
+                    <div class="bg-primary bg-gradient rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                        <span class="text-white fw-bold fs-4">1</span>
+                    </div>
+                    <h4>选择曲目</h4>
+                    <p class="text-muted">从我们精心准备的曲库中选择适合您水平的练习曲目</p>
+                </div>
+            </div>
+            
+            <div class="col-md-4 text-center">
+                <div class="mb-4">
+                    <div class="bg-success bg-gradient rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                        <span class="text-white fw-bold fs-4">2</span>
+                    </div>
+                    <h4>录制演奏</h4>
+                    <p class="text-muted">使用手机或电脑录制您的演奏音频，上传到平台</p>
+                </div>
+            </div>
+            
+            <div class="col-md-4 text-center">
+                <div class="mb-4">
+                    <div class="bg-info bg-gradient rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                        <span class="text-white fw-bold fs-4">3</span>
+                    </div>
+                    <h4>获得反馈</h4>
+                    <p class="text-muted">AI分析完成后，获得详细的演奏评估和改进建议</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 统计数据 -->
+<section class="py-5 bg-primary text-white">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-md-3 col-6 mb-4">
+                <div class="display-4 fw-bold">1000+</div>
+                <p class="mb-0">注册用户</p>
+            </div>
+            <div class="col-md-3 col-6 mb-4">
+                <div class="display-4 fw-bold">500+</div>
+                <p class="mb-0">练习曲目</p>
+            </div>
+            <div class="col-md-3 col-6 mb-4">
+                <div class="display-4 fw-bold">10000+</div>
+                <p class="mb-0">练习记录</p>
+            </div>
+            <div class="col-md-3 col-6 mb-4">
+                <div class="display-4 fw-bold">95%</div>
+                <p class="mb-0">用户满意度</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 行动号召 -->
+<section class="py-5">
+    <div class="container text-center">
+        <h2 class="h1 mb-4">准备开始您的音乐学习之旅了吗？</h2>
+        <p class="lead text-muted mb-4">加入我们，体验AI驱动的个性化音乐教育</p>
+        {% if not current_user.is_authenticated %}
+        <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg me-3">
+            <i class="fas fa-rocket"></i> 免费注册
+        </a>
+        <a href="{{ url_for('main.about') }}" class="btn btn-outline-primary btn-lg">
+            <i class="fas fa-info-circle"></i> 了解更多
+        </a>
+        {% else %}
+        <a href="{{ url_for('main.practices') }}" class="btn btn-primary btn-lg">
+            <i class="fas fa-play"></i> 开始练习
+        </a>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
