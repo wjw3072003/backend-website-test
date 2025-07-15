@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AiMusPal - AI音乐教育平台演示</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Microsoft YaHei', Arial, sans-serif; }
+        .navbar-brand { font-weight: bold; color: #4CAF50 !important; }
+        .demo-card { margin-bottom: 20px; }
+        .feature-demo { background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 10px 0; }
+        .api-demo { background: #fff3cd; padding: 15px; border-radius: 8px; margin: 10px 0; }
+        .mock-data { background: #d1ecf1; padding: 10px; border-radius: 5px; font-family: monospace; }
+        .demo-section { border: 2px solid #e9ecef; border-radius: 10px; padding: 20px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <!-- 导航栏演示 -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-music"></i> AiMusPal
+            </a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link active" href="#">首页</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">仪表板</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">练习曲目</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">管理后台</a></li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                            <i class="fas fa-user"></i> 演示用户
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="alert alert-info" role="alert">
+                    <h4 class="alert-heading"><i class="fas fa-info-circle"></i> AiMusPal 应用演示</h4>
+                    <p>这是AiMusPal音乐教育平台的功能演示。下面展示了应用的主要功能模块。</p>
+                    <hr>
+                    <p class="mb-0"><strong>注意：</strong> 这是静态演示页面，实际应用需要启动Flask服务器。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 主要功能演示 -->
+        <div class="demo-section">
+            <h2><i class="fas fa-home"></i> 首页功能</h2>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <div class="bg-primary bg-gradient rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                <i class="fas fa-brain text-white fs-4"></i>
+                            </div>
+                            <h5>AI智能分析</h5>
+                            <p class="text-muted">分析音乐演奏的节拍、音准、节奏</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <div class="bg-success bg-gradient rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                <i class="fas fa-comments text-white fs-4"></i>
+                            </div>
+                            <h5>个性化反馈</h5>
+                            <p class="text-muted">根据用户水平提供定制建议</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <div class="bg-info bg-gradient rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                <i class="fas fa-chart-line text-white fs-4"></i>
+                            </div>
+                            <h5>学习追踪</h5>
+                            <p class="text-muted">记录学习历程和进步轨迹</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 用户仪表板演示 -->
+        <div class="demo-section">
+            <h2><i class="fas fa-tachometer-alt"></i> 用户仪表板</h2>
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h3 class="text-primary">15</h3>
+                            <p class="mb-0">总练习次数</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h3 class="text-success">82.5</h3>
+                            <p class="mb-0">平均分数</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h3 class="text-info">5</h3>
+                            <p class="mb-0">本周练习</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h3 class="text-warning">3</h3>
+                            <p class="mb-0">完成曲目</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 练习曲目演示 -->
+        <div class="demo-section">
+            <h2><i class="fas fa-music"></i> 练习曲目库</h2>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>曲目</th>
+                            <th>作曲家</th>
+                            <th>难度</th>
+                            <th>类型</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>小星星变奏曲</td>
+                            <td>莫扎特</td>
+                            <td><span class="badge bg-success">3/10</span></td>
+                            <td>古典</td>
+                            <td>
+                                <button class="btn btn-primary btn-sm">
+                                    <i class="fas fa-play"></i> 开始练习
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>月光奏鸣曲第一乐章</td>
+                            <td>贝多芬</td>
+                            <td><span class="badge bg-danger">7/10</span></td>
+                            <td>古典</td>
+                            <td>
+                                <button class="btn btn-primary btn-sm">
+                                    <i class="fas fa-play"></i> 开始练习
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>天空之城</td>
+                            <td>久石让</td>
+                            <td><span class="badge bg-warning">5/10</span></td>
+                            <td>流行</td>
+                            <td>
+                                <button class="btn btn-primary btn-sm">
+                                    <i class="fas fa-play"></i> 开始练习
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- AI分析结果演示 -->
+        <div class="demo-section">
+            <h2><i class="fas fa-robot"></i> AI分析结果演示</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-chart-bar"></i> 演奏评分</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label>总体评分</label>
+                                <div class="progress">
+                                    <div class="progress-bar bg-success" style="width: 85%">85分</div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label>节拍准确度</label>
+                                <div class="progress">
+                                    <div class="progress-bar bg-primary" style="width: 92%">92%</div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label>音准度</label>
+                                <div class="progress">
+                                    <div class="progress-bar bg-info" style="width: 78%">78%</div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label>节奏准确度</label>
+                                <div class="progress">
+                                    <div class="progress-bar bg-warning" style="width: 88%">88%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-comments"></i> AI反馈</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-success">
+                                <strong>🎉 太棒了！</strong> 您的演奏非常出色！节拍控制很好，保持稳定的节奏感。音准很准确，音色也很优美。
+                            </div>
+                            <h6>改进建议：</h6>
+                            <ul class="list-unstyled">
+                                <li>• 继续保持目前的练习水平</li>
+                                <li>• 可以尝试更有挑战性的曲目</li>
+                                <li>• 注意音乐表达的细节处理</li>
+                                <li>• 保持每日练习的好习惯</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- API接口演示 -->
+        <div class="demo-section">
+            <h2><i class="fas fa-code"></i> API接口演示</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>用户登录API</h5>
+                    <div class="api-demo">
+                        <strong>POST /api/auth/login</strong>
+                        <pre class="mock-data mt-2">
+{
+  "email": "student@example.com",
+  "password": "password123"
+}
+
+响应:
+{
+  "message": "登录成功",
+  "access_token": "eyJ0eXAiOiJKV1QiLCJhb...",
+  "user": {
+    "id": 1,
+    "username": "student1",
+    "email": "student@example.com",
+    "roles": ["student"]
+  }
+}</pre>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h5>练习数据API</h5>
+                    <div class="api-demo">
+                        <strong>GET /api/practices</strong>
+                        <pre class="mock-data mt-2">
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhb...
+
+响应:
+{
+  "practices": [
+    {
+      "id": 1,
+      "title": "小星星变奏曲",
+      "composer": "莫扎特",
+      "difficulty_level": 3,
+      "genre": "古典"
+    }
+  ],
+  "total": 5,
+  "current_page": 1
+}</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 管理后台演示 -->
+        <div class="demo-section">
+            <h2><i class="fas fa-cogs"></i> 管理后台</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>系统统计</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <h4 class="text-primary">156</h4>
+                                    <small>总用户数</small>
+                                </div>
+                                <div class="col-6">
+                                    <h4 class="text-success">25</h4>
+                                    <small>练习曲目</small>
+                                </div>
+                                <div class="col-6 mt-3">
+                                    <h4 class="text-info">1,234</h4>
+                                    <small>练习记录</small>
+                                </div>
+                                <div class="col-6 mt-3">
+                                    <h4 class="text-warning">89%</h4>
+                                    <small>用户活跃度</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>用户角色管理</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-2">
+                                <span class="badge bg-primary me-2">管理员</span>
+                                <span class="text-muted">5 人</span>
+                            </div>
+                            <div class="mb-2">
+                                <span class="badge bg-success me-2">教师</span>
+                                <span class="text-muted">23 人</span>
+                            </div>
+                            <div class="mb-2">
+                                <span class="badge bg-info me-2">学生</span>
+                                <span class="text-muted">128 人</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 技术特性展示 -->
+        <div class="demo-section">
+            <h2><i class="fas fa-tools"></i> 技术特性</h2>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="feature-demo text-center">
+                        <i class="fas fa-server fa-2x text-primary mb-3"></i>
+                        <h5>后端技术</h5>
+                        <ul class="list-unstyled">
+                            <li>Flask 2.3.3</li>
+                            <li>MySQL 8.0</li>
+                            <li>Redis 7</li>
+                            <li>SQLAlchemy</li>
+                            <li>JWT认证</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-demo text-center">
+                        <i class="fas fa-mobile-alt fa-2x text-success mb-3"></i>
+                        <h5>前端技术</h5>
+                        <ul class="list-unstyled">
+                            <li>Bootstrap 5</li>
+                            <li>Font Awesome 6</li>
+                            <li>响应式设计</li>
+                            <li>RESTful API</li>
+                            <li>移动端支持</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-demo text-center">
+                        <i class="fas fa-docker fa-2x text-info mb-3"></i>
+                        <h5>部署运维</h5>
+                        <ul class="list-unstyled">
+                            <li>Docker容器化</li>
+                            <li>Docker Compose</li>
+                            <li>环境隔离</li>
+                            <li>一键部署</li>
+                            <li>数据持久化</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 启动说明 -->
+        <div class="demo-section">
+            <h2><i class="fas fa-rocket"></i> 如何启动实际应用</h2>
+            <div class="alert alert-warning">
+                <h5>方法1：Docker部署（推荐）</h5>
+                <pre class="mock-data">
+# 1. 启动所有服务
+docker-compose up -d
+
+# 2. 初始化数据库
+docker-compose exec web flask init-db
+docker-compose exec web flask create-sample-data
+
+# 3. 访问应用
+http://localhost:5000  # 主网站
+http://localhost:5000/admin  # 管理后台
+http://localhost:8080  # 数据库管理(Adminer)
+                </pre>
+            </div>
+            <div class="alert alert-info">
+                <h5>方法2：本地开发</h5>
+                <pre class="mock-data">
+# 1. 创建虚拟环境
+python3 -m venv venv
+source venv/bin/activate
+
+# 2. 安装依赖
+pip install -r requirements.txt
+
+# 3. 设置环境变量
+export FLASK_APP=app.py
+export FLASK_ENV=development
+
+# 4. 初始化数据库并启动
+flask init-db
+flask create-sample-data
+python app.py
+                </pre>
+            </div>
+            <div class="alert alert-success">
+                <h5>默认管理员账户</h5>
+                <p>
+                    <strong>邮箱：</strong> admin@aimuspal.com<br>
+                    <strong>密码：</strong> admin123
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
