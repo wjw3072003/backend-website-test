@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+
+{% block title %}{{ practice.title }} - 练习详情{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- 练习曲目信息 -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">
+                        <i class="fas fa-music text-primary"></i>
+                        {{ practice.title }}
+                    </h4>
+                    <span class="badge bg-primary fs-6">难度 {{ practice.difficulty_level }}/10</span>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>作曲家:</strong> {{ practice.composer or '未知' }}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>音乐类型:</strong> {{ practice.genre or '未分类' }}
+                        </div>
+                    </div>
+                    
+                    {% if practice.description %}
+                    <div class="mb-3">
+                        <strong>曲目介绍:</strong>
+                        <p class="mt-2">{{ practice.description }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- 标准音频 -->
+                    {% if practice.standard_audio_path %}
+                    <div class="mb-3">
+                        <strong>标准演奏:</strong>
+                        <div class="mt-2">
+                            <audio controls class="w-100">
+                                <source src="{{ practice.standard_audio_path }}" type="audio/mpeg">
+                                您的浏览器不支持音频播放
+                            </audio>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- 乐谱 -->
+                    {% if practice.standard_score_path %}
+                    <div class="mb-3">
+                        <strong>乐谱:</strong>
+                        <div class="mt-2">
+                            <a href="{{ practice.standard_score_path }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-file-pdf"></i> 查看乐谱
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- 练习按钮 -->
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-start mt-4">
+                        <a href="{{ url_for('main.practice_upload', practice_id=practice.id) }}" class="btn btn-success btn-lg">
+                            <i class="fas fa-microphone"></i> 开始练习
+                        </a>
+                        <button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#tipsModal">
+                            <i class="fas fa-lightbulb"></i> 练习提示
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 侧边栏 - 个人统计 -->
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-line text-success"></i>
+                        我的练习统计
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="border-end">
+                                <h4 class="text-primary mb-1">{{ user_records|length }}</h4>
+                                <small class="text-muted">练习次数</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-success mb-1">{{ "%.1f"|format(best_score) }}</h4>
+                            <small class="text-muted">最高分数</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 练习建议 -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-tips text-warning"></i>
+                        练习建议
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            先听标准演奏，熟悉旋律
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            注意节拍和节奏准确性
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            多次练习，循序渐进
+                        </li>
+                        <li>
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            关注AI反馈建议
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 最近练习记录 -->
+    {% if user_records %}
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-history text-info"></i>
+                最近练习记录
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>练习时间</th>
+                            <th>得分</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in user_records %}
+                        <tr>
+                            <td>{{ record.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>
+                                {% if record.score %}
+                                    <span class="badge bg-{{ 'success' if record.score >= 80 else 'warning' if record.score >= 60 else 'danger' }}">
+                                        {{ "%.1f"|format(record.score) }}分
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted">未评分</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if record.status == 'completed' %}
+                                    <span class="badge bg-success">已完成</span>
+                                {% elif record.status == 'analyzing' %}
+                                    <span class="badge bg-warning">分析中</span>
+                                {% else %}
+                                    <span class="badge bg-danger">失败</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if record.status == 'completed' %}
+                                    <a href="{{ url_for('main.practice_results', practice_id=practice.id, record_id=record.id) }}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i> 查看详情
+                                    </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="text-center mt-3">
+                <a href="{{ url_for('main.practice_history') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-history"></i> 查看全部记录
+                </a>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <i class="fas fa-music fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">还没有练习记录</h5>
+            <p class="text-muted mb-4">开始你的第一次练习吧！</p>
+            <a href="{{ url_for('main.practice_upload', practice_id=practice.id) }}" class="btn btn-primary">
+                <i class="fas fa-microphone"></i> 开始练习
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- 练习提示模态框 -->
+<div class="modal fade" id="tipsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-lightbulb text-warning"></i>
+                    练习提示
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h6>练习前准备：</h6>
+                <ul>
+                    <li>确保环境安静，减少背景噪音</li>
+                    <li>调整好设备音量和录音质量</li>
+                    <li>先熟悉曲目，可多听几遍标准演奏</li>
+                </ul>
+                
+                <h6 class="mt-3">练习要点：</h6>
+                <ul>
+                    <li>保持稳定的节拍，不要忽快忽慢</li>
+                    <li>注意音准，每个音都要准确</li>
+                    <li>表现力要自然，不要过于僵硬</li>
+                </ul>
+                
+                <h6 class="mt-3">AI评分说明：</h6>
+                <ul>
+                    <li><strong>90-100分</strong>：优秀，表现非常出色</li>
+                    <li><strong>80-89分</strong>：良好，有小的改进空间</li>
+                    <li><strong>70-79分</strong>：中等，需要加强练习</li>
+                    <li><strong>60-69分</strong>：及格，建议多加练习</li>
+                    <li><strong>60分以下</strong>：需要重点练习基础技巧</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                <a href="{{ url_for('main.practice_upload', practice_id=practice.id) }}" class="btn btn-primary">
+                    开始练习
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

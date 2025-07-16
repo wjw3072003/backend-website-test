@@ -47,21 +47,22 @@ class PracticeRecord(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     practice_id = db.Column(db.Integer, db.ForeignKey('practice.id'), nullable=False)
     
-    # 练习信息
-    duration = db.Column(db.Integer)  # 练习时长（秒）
-    score = db.Column(db.Float)  # AI评分 (0-100)
+    # 音频文件信息
+    audio_file_path = db.Column(db.String(500))
+    duration = db.Column(db.Integer, default=0)  # 练习时长（秒）
     
-    # AI分析结果
-    tempo_accuracy = db.Column(db.Float)  # 节拍准确度
-    pitch_accuracy = db.Column(db.Float)  # 音准度
-    rhythm_accuracy = db.Column(db.Float)  # 节奏准确度
+    # 分析结果
+    score = db.Column(db.Float, default=0)  # 总分 (0-100)
+    tempo_accuracy = db.Column(db.Float, default=0)  # 节拍准确度
+    pitch_accuracy = db.Column(db.Float, default=0)  # 音准准确度  
+    rhythm_accuracy = db.Column(db.Float, default=0)  # 节奏准确度
     
-    # 反馈信息
-    ai_feedback = db.Column(db.Text)  # AI反馈文本
-    improvement_suggestions = db.Column(db.Text)  # 改进建议
+    # AI反馈信息
+    feedback = db.Column(db.Text)  # AI分析反馈
+    suggestions = db.Column(db.Text)  # 改进建议
     
-    # 状态
-    status = db.Column(db.String(20), default='completed')  # completed, analyzing, failed
+    # 状态和时间
+    status = db.Column(db.String(20), default='completed')  # analyzing, completed, failed
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # 关系
@@ -74,16 +75,17 @@ class PracticeRecord(db.Model):
             'user_id': self.user_id,
             'practice_id': self.practice_id,
             'practice_title': self.practice.title if self.practice else None,
+            'audio_file_path': self.audio_file_path,
             'duration': self.duration,
             'score': self.score,
             'tempo_accuracy': self.tempo_accuracy,
             'pitch_accuracy': self.pitch_accuracy,
             'rhythm_accuracy': self.rhythm_accuracy,
-            'ai_feedback': self.ai_feedback,
-            'improvement_suggestions': self.improvement_suggestions,
+            'feedback': self.feedback,
+            'suggestions': self.suggestions,
             'status': self.status,
             'created_at': self.created_at.isoformat() if self.created_at else None,
-            'audio_files': [audio.to_dict() for audio in self.audio_files]
+            'audio_files': [audio.to_dict() for audio in self.audio_files] if hasattr(self, 'audio_files') else []
         }
     
     def __repr__(self):

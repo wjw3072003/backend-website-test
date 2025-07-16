@@ -213,6 +213,107 @@ def upload_practice_audio(practice_id):
         db.session.rollback()
         return jsonify({'error': '上传失败，请稍后重试'}), 500
 
+@api.route('/upload-practice', methods=['POST'])
+def upload_practice():
+    """上传练习音频（支持Web Audio API录制的blob）"""
+    if 'audio' not in request.files:
+        return jsonify({'error': '没有音频文件'}), 400
+    
+    file = request.files['audio']
+    practice_id = request.form.get('practice_id')
+    
+    if not practice_id:
+        return jsonify({'error': '缺少练习ID'}), 400
+    
+    try:
+        practice_id = int(practice_id)
+        practice = Practice.query.get_or_404(practice_id)
+    except (ValueError, TypeError):
+        return jsonify({'error': '无效的练习ID'}), 400
+    
+    # 检查用户是否登录（通过session或JWT）
+    user_id = None
+    
+    # 优先检查JWT token
+    try:
+        from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
+        verify_jwt_in_request(optional=True)
+        user_id = get_jwt_identity()
+    except:
+        pass
+    
+    # 如果没有JWT，检查Flask-Login session
+    if not user_id:
+        from flask_login import current_user
+        if current_user.is_authenticated:
+            user_id = current_user.id
+        else:
+            return jsonify({'error': '请先登录'}), 401
+    
+    if not file or file.filename == '':
+        return jsonify({'error': '没有选择文件'}), 400
+    
+    try:
+        # 保存音频文件
+        filename = save_audio_file(file)
+        if not filename:
+            return jsonify({'error': '文件保存失败'}), 500
+        
+        # 构建完整的文件路径用于分析
+        file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], 'audio', 
+                                datetime.now().strftime('%Y/%m/%d'), filename)
+        
+        # 分析音频
+        analysis_result = analyze_audio_practice(file_path, practice)
+        
+        # 创建练习记录
+        record = PracticeRecord(
+            user_id=user_id,
+            practice_id=practice_id,
+            score=analysis_result['score'],
+            tempo_accuracy=analysis_result['tempo_accuracy'],
+            pitch_accuracy=analysis_result['pitch_accuracy'], 
+            rhythm_accuracy=analysis_result['rhythm_accuracy'],
+            ai_feedback=analysis_result['feedback'],
+            improvement_suggestions=analysis_result.get('suggestions', ''),
+            duration=analysis_result.get('duration', 0),
+            status='completed'
+        )
+        
+        db.session.add(record)
+        db.session.commit()
+        
+        # 创建音频文件记录
+        audio_file = AudioFile(
+            practice_record_id=record.id,
+            filename=filename,
+            original_filename=file.filename,
+            file_path=file_path,
+            file_size=len(file.read()) if hasattr(file, 'read') else 0,
+            file_type=file.content_type if hasattr(file, 'content_type') else 'audio/wav'
+        )
+        
+        db.session.add(audio_file)
+        db.session.commit()
+        
+        return jsonify({
+            'message': '练习上传成功',
+            'record_id': record.id,
+            'score': record.score,
+            'analysis': {
+                'tempo_accuracy': record.tempo_accuracy,
+                'pitch_accuracy': record.pitch_accuracy,
+                'rhythm_accuracy': record.rhythm_accuracy,
+                'feedback': record.ai_feedback
+            }
+        }), 201
+        
+    except Exception as e:
+        current_app.logger.error(f"练习上传失败: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': '上传失败，请稍后重试'}), 500
+
 @api.route('/practice-records', methods=['GET'])
 @jwt_required()
 def get_practice_records():
