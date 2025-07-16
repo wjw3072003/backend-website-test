@@ -10,7 +10,7 @@ class Config:
     
     # 数据库配置
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        'mysql+pymysql://aimuspal:password123@localhost:3306/aimuspal_db'
+        'sqlite:///aimuspal.db'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # Redis配置

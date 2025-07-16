@@ -1,0 +1,436 @@
+{% extends "base.html" %}
+
+{% block title %}练习结果 - {{ practice.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .score-circle {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        border: 8px solid #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        font-weight: bold;
+        margin: 0 auto;
+        position: relative;
+    }
+    
+    .score-excellent {
+        border-color: #28a745;
+        color: #28a745;
+        background: rgba(40, 167, 69, 0.1);
+    }
+    
+    .score-good {
+        border-color: #20c997;
+        color: #20c997;
+        background: rgba(32, 201, 151, 0.1);
+    }
+    
+    .score-average {
+        border-color: #ffc107;
+        color: #856404;
+        background: rgba(255, 193, 7, 0.1);
+    }
+    
+    .score-poor {
+        border-color: #dc3545;
+        color: #dc3545;
+        background: rgba(220, 53, 69, 0.1);
+    }
+    
+    .accuracy-bar {
+        height: 25px;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #e9ecef;
+        position: relative;
+    }
+    
+    .accuracy-fill {
+        height: 100%;
+        transition: width 1s ease-in-out;
+        border-radius: 12px;
+        position: relative;
+    }
+    
+    .accuracy-text {
+        position: absolute;
+        width: 100%;
+        text-align: center;
+        line-height: 25px;
+        font-weight: 500;
+        color: #495057;
+        z-index: 1;
+    }
+    
+    .feedback-card {
+        border-left: 4px solid #007bff;
+        background: #f8f9fa;
+    }
+    
+    .suggestions-card {
+        border-left: 4px solid #28a745;
+        background: #f8f9fa;
+    }
+    
+    .audio-player {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .progress-ring {
+        transform: rotate(-90deg);
+    }
+    
+    .progress-ring-circle {
+        stroke-dasharray: 283;
+        stroke-dashoffset: 283;
+        transition: stroke-dashoffset 1s ease-in-out;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- 页面头部 -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-2">
+                <i class="fas fa-chart-line text-primary"></i>
+                练习结果分析
+            </h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{{ url_for('main.practices') }}">练习曲目</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{{ url_for('main.practice_detail', practice_id=practice.id) }}">{{ practice.title }}</a>
+                    </li>
+                    <li class="breadcrumb-item active">分析结果</li>
+                </ol>
+            </nav>
+        </div>
+        <div>
+            <a href="{{ url_for('main.practice_detail', practice_id=practice.id) }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> 返回练习
+            </a>
+        </div>
+    </div>
+
+    <!-- 练习信息 -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h4 class="mb-2">
+                        <i class="fas fa-music text-primary"></i>
+                        {{ practice.title }}
+                    </h4>
+                    <p class="mb-0">
+                        <span class="badge bg-primary me-2">难度 {{ practice.difficulty_level }}/10</span>
+                        {% if practice.composer %}
+                        <span class="text-muted">作曲家：{{ practice.composer }}</span>
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <small class="text-muted">练习时间：{{ record.created_at.strftime('%Y年%m月%d日 %H:%M') }}</small>
+                    {% if record.duration %}
+                    <br><small class="text-muted">练习时长：{{ "%.1f"|format(record.duration) }}秒</small>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 总体得分 -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header text-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-trophy text-warning"></i>
+                        总体得分
+                    </h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="score-circle 
+                        {% if record.score >= 90 %}score-excellent
+                        {% elif record.score >= 75 %}score-good
+                        {% elif record.score >= 60 %}score-average
+                        {% else %}score-poor{% endif %}">
+                        {{ "%.1f"|format(record.score or 0) }}
+                    </div>
+                    <div class="mt-3">
+                        {% if record.score >= 90 %}
+                        <h6 class="text-success">优秀！</h6>
+                        <p class="text-muted mb-0">表现非常出色，继续保持！</p>
+                        {% elif record.score >= 75 %}
+                        <h6 class="text-info">良好</h6>
+                        <p class="text-muted mb-0">表现不错，还有小的提升空间</p>
+                        {% elif record.score >= 60 %}
+                        <h6 class="text-warning">中等</h6>
+                        <p class="text-muted mb-0">表现还可以，建议加强练习</p>
+                        {% else %}
+                        <h6 class="text-danger">需要改进</h6>
+                        <p class="text-muted mb-0">建议多加练习基础技巧</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 音频播放器 -->
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-play text-primary"></i>
+                        录音回放
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if record.audio_files %}
+                    {% for audio in record.audio_files %}
+                    <div class="audio-player">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <small class="text-muted">{{ audio.original_filename }}</small>
+                            <small class="text-muted">{{ (audio.file_size / 1024 / 1024)|round(2) }} MB</small>
+                        </div>
+                        <audio controls class="w-100">
+                            <source src="{{ url_for('static', filename='uploads/' + audio.filename) }}" type="{{ audio.file_type }}">
+                            您的浏览器不支持音频播放
+                        </audio>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-file-audio fa-3x mb-3"></i>
+                        <p>音频文件不可用</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 详细分析 -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-bar text-success"></i>
+                        详细分析
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- 节拍准确度 -->
+                        <div class="col-md-4 mb-3">
+                            <h6 class="mb-3">
+                                <i class="fas fa-metronome text-primary"></i>
+                                节拍准确度
+                            </h6>
+                            <div class="accuracy-bar">
+                                <div class="accuracy-text">{{ "%.1f"|format(record.tempo_accuracy or 0) }}%</div>
+                                <div class="accuracy-fill 
+                                    {% if (record.tempo_accuracy or 0) >= 90 %}bg-success
+                                    {% elif (record.tempo_accuracy or 0) >= 75 %}bg-info
+                                    {% elif (record.tempo_accuracy or 0) >= 60 %}bg-warning
+                                    {% else %}bg-danger{% endif %}" 
+                                    style="width: {{ record.tempo_accuracy or 0 }}%">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 音准度 -->
+                        <div class="col-md-4 mb-3">
+                            <h6 class="mb-3">
+                                <i class="fas fa-music text-primary"></i>
+                                音准度
+                            </h6>
+                            <div class="accuracy-bar">
+                                <div class="accuracy-text">{{ "%.1f"|format(record.pitch_accuracy or 0) }}%</div>
+                                <div class="accuracy-fill 
+                                    {% if (record.pitch_accuracy or 0) >= 90 %}bg-success
+                                    {% elif (record.pitch_accuracy or 0) >= 75 %}bg-info
+                                    {% elif (record.pitch_accuracy or 0) >= 60 %}bg-warning
+                                    {% else %}bg-danger{% endif %}" 
+                                    style="width: {{ record.pitch_accuracy or 0 }}%">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 节奏准确度 -->
+                        <div class="col-md-4 mb-3">
+                            <h6 class="mb-3">
+                                <i class="fas fa-drum text-primary"></i>
+                                节奏准确度
+                            </h6>
+                            <div class="accuracy-bar">
+                                <div class="accuracy-text">{{ "%.1f"|format(record.rhythm_accuracy or 0) }}%</div>
+                                <div class="accuracy-fill 
+                                    {% if (record.rhythm_accuracy or 0) >= 90 %}bg-success
+                                    {% elif (record.rhythm_accuracy or 0) >= 75 %}bg-info
+                                    {% elif (record.rhythm_accuracy or 0) >= 60 %}bg-warning
+                                    {% else %}bg-danger{% endif %}" 
+                                    style="width: {{ record.rhythm_accuracy or 0 }}%">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI反馈和建议 -->
+    <div class="row">
+        <!-- AI反馈 -->
+        {% if record.ai_feedback %}
+        <div class="col-md-6 mb-4">
+            <div class="card feedback-card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-robot text-primary"></i>
+                        AI反馈
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0">{{ record.ai_feedback }}</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- 改进建议 -->
+        {% if record.improvement_suggestions %}
+        <div class="col-md-6 mb-4">
+            <div class="card suggestions-card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-lightbulb text-success"></i>
+                        改进建议
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="suggestions-list">
+                        {% set suggestions = record.improvement_suggestions.split('\n') %}
+                        {% for suggestion in suggestions if suggestion.strip() %}
+                        <div class="d-flex align-items-start mb-2">
+                            <i class="fas fa-check-circle text-success me-2 mt-1"></i>
+                            <span>{{ suggestion.strip() }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- 操作按钮 -->
+    <div class="d-flex justify-content-center gap-3 mt-4">
+        <a href="{{ url_for('main.practice_upload', practice_id=practice.id) }}" class="btn btn-primary btn-lg">
+            <i class="fas fa-redo"></i> 重新练习
+        </a>
+        <a href="{{ url_for('main.practice_history') }}" class="btn btn-outline-secondary btn-lg">
+            <i class="fas fa-history"></i> 练习历史
+        </a>
+        <button type="button" class="btn btn-outline-info btn-lg" data-bs-toggle="modal" data-bs-target="#shareModal">
+            <i class="fas fa-share"></i> 分享结果
+        </button>
+    </div>
+</div>
+
+<!-- 分享模态框 -->
+<div class="modal fade" id="shareModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-share text-primary"></i>
+                    分享练习结果
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-3">
+                    <h6>{{ practice.title }}</h6>
+                    <div class="score-circle score-{% if record.score >= 90 %}excellent{% elif record.score >= 75 %}good{% elif record.score >= 60 %}average{% else %}poor{% endif %} mx-auto" style="width: 80px; height: 80px; font-size: 18px;">
+                        {{ "%.1f"|format(record.score or 0) }}
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">分享链接</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="shareUrl" value="{{ request.url }}" readonly>
+                        <button class="btn btn-outline-secondary" type="button" onclick="copyShareUrl()">
+                            <i class="fas fa-copy"></i> 复制
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="text-center">
+                    <small class="text-muted">分享给朋友，让他们看到你的进步！</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// 动画效果
+document.addEventListener('DOMContentLoaded', function() {
+    // 准确度条动画
+    const accuracyFills = document.querySelectorAll('.accuracy-fill');
+    accuracyFills.forEach(fill => {
+        const width = fill.style.width;
+        fill.style.width = '0%';
+        setTimeout(() => {
+            fill.style.width = width;
+        }, 500);
+    });
+});
+
+// 复制分享链接
+function copyShareUrl() {
+    const shareUrl = document.getElementById('shareUrl');
+    shareUrl.select();
+    shareUrl.setSelectionRange(0, 99999);
+    
+    try {
+        document.execCommand('copy');
+        
+        // 显示成功提示
+        const button = event.target.closest('button');
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-check"></i> 已复制';
+        button.classList.remove('btn-outline-secondary');
+        button.classList.add('btn-success');
+        
+        setTimeout(() => {
+            button.innerHTML = originalText;
+            button.classList.remove('btn-success');
+            button.classList.add('btn-outline-secondary');
+        }, 2000);
+    } catch (err) {
+        alert('复制失败，请手动复制链接');
+    }
+}
+</script>
+{% endblock %}

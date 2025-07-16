@@ -1,0 +1,470 @@
+{% extends "base.html" %}
+
+{% block title %}练习结果 - {{ record.practice.title }} - AiMusPal{% endblock %}
+
+{% block extra_css %}
+<style>
+    .result-header {
+        background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+        color: white;
+        border-radius: 15px;
+        padding: 30px;
+        margin-bottom: 30px;
+    }
+    
+    .score-circle {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 36px;
+        font-weight: bold;
+        color: white;
+        position: relative;
+        margin: 0 auto;
+    }
+    
+    .score-excellent { background: radial-gradient(circle, #4CAF50, #388e3c); }
+    .score-good { background: radial-gradient(circle, #2196F3, #1976d2); }
+    .score-average { background: radial-gradient(circle, #FF9800, #f57c00); }
+    .score-poor { background: radial-gradient(circle, #f44336, #d32f2f); }
+    
+    .metric-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        border: 1px solid #e9ecef;
+    }
+    
+    .metric-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+    
+    .metric-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        color: white;
+        font-size: 18px;
+    }
+    
+    .progress-bar-container {
+        background: #e9ecef;
+        border-radius: 10px;
+        height: 20px;
+        overflow: hidden;
+        margin-bottom: 10px;
+    }
+    
+    .progress-bar {
+        height: 100%;
+        border-radius: 10px;
+        transition: width 1s ease-in-out;
+        position: relative;
+    }
+    
+    .progress-bar.excellent { background: #4CAF50; }
+    .progress-bar.good { background: #2196F3; }
+    .progress-bar.average { background: #FF9800; }
+    .progress-bar.poor { background: #f44336; }
+    
+    .feedback-section {
+        background: #f8f9fa;
+        border-left: 4px solid #007bff;
+        border-radius: 0 10px 10px 0;
+        padding: 20px;
+        margin: 20px 0;
+    }
+    
+    .suggestion-item {
+        background: white;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 10px;
+        border-left: 4px solid #28a745;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .audio-section {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin: 20px 0;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .waveform-container {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+        margin: 15px 0;
+        text-align: center;
+    }
+    
+    .action-buttons {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-top: 30px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .comparison-chart {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin: 20px 0;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .radar-chart {
+        width: 300px;
+        height: 300px;
+        margin: 0 auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- 结果头部 -->
+    <div class="result-header">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h2 class="mb-3">
+                    <i class="fas fa-chart-line"></i> 练习分析结果
+                </h2>
+                <h4>{{ record.practice.title }}</h4>
+                <p class="mb-2">
+                    <i class="fas fa-calendar"></i> 
+                    练习时间：{{ record.created_at.strftime('%Y年%m月%d日 %H:%M') }}
+                </p>
+                <p class="mb-0">
+                    <i class="fas fa-clock"></i> 
+                    练习时长：{{ "%.1f"|format(record.duration / 60) if record.duration else "未知" }} 分钟
+                </p>
+            </div>
+            <div class="col-md-4 text-center">
+                <div class="score-circle {% if record.score >= 85 %}score-excellent{% elif record.score >= 70 %}score-good{% elif record.score >= 60 %}score-average{% else %}score-poor{% endif %}">
+                    {{ "%.0f"|format(record.score) }}分
+                </div>
+                <div class="mt-3">
+                    <h6>
+                        {% if record.score >= 85 %}
+                            <i class="fas fa-trophy text-warning"></i> 优秀！
+                        {% elif record.score >= 70 %}
+                            <i class="fas fa-thumbs-up text-info"></i> 良好
+                        {% elif record.score >= 60 %}
+                            <i class="fas fa-check text-warning"></i> 及格
+                        {% else %}
+                            <i class="fas fa-exclamation-triangle text-danger"></i> 需要改进
+                        {% endif %}
+                    </h6>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- 详细指标 -->
+        <div class="col-lg-8">
+            <!-- 音准准确度 -->
+            <div class="metric-card">
+                <div class="metric-header">
+                    <div class="metric-icon" style="background: #e91e63;">
+                        <i class="fas fa-music"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-1">音准准确度</h5>
+                        <small class="text-muted">检测您的音准与标准音高的匹配度</small>
+                    </div>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar {% if record.pitch_accuracy >= 85 %}excellent{% elif record.pitch_accuracy >= 70 %}good{% elif record.pitch_accuracy >= 60 %}average{% else %}poor{% endif %}" 
+                         style="width: {{ record.pitch_accuracy }}%"></div>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span>{{ "%.1f"|format(record.pitch_accuracy) }}%</span>
+                    <span class="text-muted">
+                        {% if record.pitch_accuracy >= 90 %}完美{% elif record.pitch_accuracy >= 80 %}很好{% elif record.pitch_accuracy >= 70 %}良好{% elif record.pitch_accuracy >= 60 %}一般{% else %}需改进{% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <!-- 节拍准确度 -->
+            <div class="metric-card">
+                <div class="metric-header">
+                    <div class="metric-icon" style="background: #9c27b0;">
+                        <i class="fas fa-drum"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-1">节拍准确度</h5>
+                        <small class="text-muted">检测您的节拍与标准节拍的同步性</small>
+                    </div>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar {% if record.tempo_accuracy >= 85 %}excellent{% elif record.tempo_accuracy >= 70 %}good{% elif record.tempo_accuracy >= 60 %}average{% else %}poor{% endif %}" 
+                         style="width: {{ record.tempo_accuracy }}%"></div>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span>{{ "%.1f"|format(record.tempo_accuracy) }}%</span>
+                    <span class="text-muted">
+                        {% if record.tempo_accuracy >= 90 %}完美{% elif record.tempo_accuracy >= 80 %}很好{% elif record.tempo_accuracy >= 70 %}良好{% elif record.tempo_accuracy >= 60 %}一般{% else %}需改进{% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <!-- 节奏准确度 -->
+            <div class="metric-card">
+                <div class="metric-header">
+                    <div class="metric-icon" style="background: #673ab7;">
+                        <i class="fas fa-metronome"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-1">节奏准确度</h5>
+                        <small class="text-muted">检测您的节奏型与标准节奏的一致性</small>
+                    </div>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar {% if record.rhythm_accuracy >= 85 %}excellent{% elif record.rhythm_accuracy >= 70 %}good{% elif record.rhythm_accuracy >= 60 %}average{% else %}poor{% endif %}" 
+                         style="width: {{ record.rhythm_accuracy }}%"></div>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span>{{ "%.1f"|format(record.rhythm_accuracy) }}%</span>
+                    <span class="text-muted">
+                        {% if record.rhythm_accuracy >= 90 %}完美{% elif record.rhythm_accuracy >= 80 %}很好{% elif record.rhythm_accuracy >= 70 %}良好{% elif record.rhythm_accuracy >= 60 %}一般{% else %}需改进{% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <!-- 雷达图对比 -->
+            <div class="comparison-chart">
+                <h5 class="mb-3">
+                    <i class="fas fa-chart-radar"></i> 综合能力雷达图
+                </h5>
+                <div class="radar-chart">
+                    <canvas id="radarChart" width="300" height="300"></canvas>
+                </div>
+                <div class="text-center mt-3">
+                    <small class="text-muted">蓝色：您的表现 | 绿色：目标水平</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧面板 -->
+        <div class="col-lg-4">
+            <!-- 音频播放 -->
+            <div class="audio-section">
+                <h5 class="mb-3">
+                    <i class="fas fa-headphones"></i> 录音回放
+                </h5>
+                {% if record.audio_file_path %}
+                <audio controls class="w-100 mb-3">
+                    <source src="{{ record.audio_file_path }}" type="audio/mpeg">
+                    您的浏览器不支持音频播放。
+                </audio>
+                {% endif %}
+                
+                <!-- 波形可视化 -->
+                <div class="waveform-container">
+                    <i class="fas fa-wave-square fa-2x text-muted"></i>
+                    <div class="mt-2 text-muted">音频波形分析</div>
+                </div>
+            </div>
+
+            <!-- AI反馈 -->
+            {% if record.feedback %}
+            <div class="feedback-section">
+                <h5 class="mb-3">
+                    <i class="fas fa-robot"></i> AI智能反馈
+                </h5>
+                <p>{{ record.feedback }}</p>
+            </div>
+            {% endif %}
+
+            <!-- 改进建议 -->
+            {% if record.suggestions %}
+            <div class="mt-4">
+                <h5 class="mb-3">
+                    <i class="fas fa-lightbulb"></i> 改进建议
+                </h5>
+                {% for suggestion in record.suggestions %}
+                <div class="suggestion-item">
+                    <strong>{{ suggestion.category }}：</strong>
+                    {{ suggestion.text }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 操作按钮 -->
+    <div class="action-buttons">
+        <div class="row text-center">
+            <div class="col-md-3">
+                <a href="{{ url_for('main.practice_detail', practice_id=record.practice.id) }}" class="btn btn-primary btn-lg w-100">
+                    <i class="fas fa-redo"></i><br>
+                    <small>重新练习</small>
+                </a>
+            </div>
+            <div class="col-md-3">
+                <button class="btn btn-info btn-lg w-100" onclick="shareResult()">
+                    <i class="fas fa-share-alt"></i><br>
+                    <small>分享结果</small>
+                </button>
+            </div>
+            <div class="col-md-3">
+                <button class="btn btn-success btn-lg w-100" onclick="downloadReport()">
+                    <i class="fas fa-download"></i><br>
+                    <small>下载报告</small>
+                </button>
+            </div>
+            <div class="col-md-3">
+                <a href="{{ url_for('main.dashboard') }}" class="btn btn-secondary btn-lg w-100">
+                    <i class="fas fa-home"></i><br>
+                    <small>返回首页</small>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 创建雷达图
+    const ctx = document.getElementById('radarChart').getContext('2d');
+    
+    const radarChart = new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels: ['音准', '节拍', '节奏', '表现力', '技巧', '完整性'],
+            datasets: [{
+                label: '您的表现',
+                data: [
+                    {{ record.pitch_accuracy }},
+                    {{ record.tempo_accuracy }},
+                    {{ record.rhythm_accuracy }},
+                    {{ record.score * 0.8 }}, // 模拟表现力分数
+                    {{ record.score * 0.9 }}, // 模拟技巧分数
+                    {{ record.score * 0.85 }}  // 模拟完整性分数
+                ],
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgb(54, 162, 235)',
+                borderWidth: 2,
+                pointBackgroundColor: 'rgb(54, 162, 235)',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2
+            }, {
+                label: '目标水平',
+                data: [85, 85, 85, 85, 85, 85],
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgb(75, 192, 192)',
+                borderWidth: 2,
+                pointBackgroundColor: 'rgb(75, 192, 192)',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            },
+            scales: {
+                r: {
+                    beginAtZero: true,
+                    max: 100,
+                    grid: {
+                        color: 'rgba(0,0,0,0.1)'
+                    },
+                    pointLabels: {
+                        font: {
+                            size: 12
+                        }
+                    },
+                    ticks: {
+                        stepSize: 20,
+                        font: {
+                            size: 10
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    // 动画显示进度条
+    setTimeout(() => {
+        const progressBars = document.querySelectorAll('.progress-bar');
+        progressBars.forEach(bar => {
+            bar.style.width = bar.style.width;
+        });
+    }, 500);
+});
+
+function shareResult() {
+    const url = window.location.href;
+    const text = `我在AiMusPal上练习《{{ record.practice.title }}》获得了{{ "%.0f"|format(record.score) }}分！`;
+    
+    if (navigator.share) {
+        navigator.share({
+            title: 'AiMusPal练习结果',
+            text: text,
+            url: url
+        });
+    } else {
+        // 复制到剪贴板
+        navigator.clipboard.writeText(text + ' ' + url).then(() => {
+            alert('结果链接已复制到剪贴板！');
+        });
+    }
+}
+
+function downloadReport() {
+    // 生成PDF报告（这里可以集成jsPDF等库）
+    alert('下载功能正在开发中，敬请期待！');
+}
+
+// 添加一些动态效果
+document.addEventListener('DOMContentLoaded', function() {
+    // 分数圆形动画
+    const scoreCircle = document.querySelector('.score-circle');
+    if (scoreCircle) {
+        scoreCircle.style.transform = 'scale(0)';
+        setTimeout(() => {
+            scoreCircle.style.transition = 'transform 0.5s ease-out';
+            scoreCircle.style.transform = 'scale(1)';
+        }, 300);
+    }
+    
+    // 指标卡片依次出现
+    const metricCards = document.querySelectorAll('.metric-card');
+    metricCards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            card.style.transition = 'opacity 0.5s ease-out, transform 0.5s ease-out';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, 200 * (index + 1));
+    });
+});
+</script>
+{% endblock %}

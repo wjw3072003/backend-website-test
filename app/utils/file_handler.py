@@ -28,7 +28,7 @@ def generate_unique_filename(original_filename):
     
     return f"{timestamp}_{unique_id}{extension}"
 
-def save_audio_file(file, practice_record_id):
+def save_audio_file(file, practice_record_id=None):
     """保存音频文件"""
     if not file or not allowed_file(file.filename):
         raise ValueError("不支持的文件格式")
@@ -47,9 +47,8 @@ def save_audio_file(file, practice_record_id):
     file_path = os.path.join(upload_dir, filename)
     file.save(file_path)
     
-    # 返回相对路径用于数据库存储
-    relative_path = os.path.join('audio', date_dir, filename)
-    return relative_path
+    # 返回文件名用于数据库存储
+    return filename
 
 def save_score_file(file, practice_id):
     """保存乐谱文件"""
