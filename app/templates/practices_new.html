@@ -1,0 +1,336 @@
+{% extends "base_new.html" %}
+
+{% block title %}练习曲目 - AI MusPal{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- 页面标题 -->
+    <div class="page-header mb-5">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="h2 mb-2">
+                    <i class="fas fa-music text-primary me-2"></i>练习曲目
+                </h1>
+                <p class="text-gray mb-0">选择适合您的曲目，开始AI辅助的音乐练习</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <div class="stats-summary">
+                    <span class="badge bg-primary rounded-pill me-2">{{ total_practices }} 首曲目</span>
+                    <span class="badge bg-success rounded-pill">{{ user_practice_count }} 次练习</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 搜索和筛选 -->
+    <div class="filters-section mb-4">
+        <div class="card">
+            <div class="card-body">
+                <form method="GET" action="{{ url_for('main.practices') }}" class="row g-3">
+                    <div class="col-md-4">
+                        <div class="input-group">
+                            <span class="input-group-text bg-transparent border-end-0">
+                                <i class="fas fa-search text-gray"></i>
+                            </span>
+                            <input type="text" name="search" class="form-control border-start-0" 
+                                   placeholder="搜索曲目、作曲家..." value="{{ request.args.get('search', '') }}">
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-2">
+                        <select name="difficulty" class="form-select">
+                            <option value="">所有难度</option>
+                            {% for level in difficulty_levels %}
+                            <option value="{{ level }}" {{ 'selected' if request.args.get('difficulty')|int == level }}>
+                                难度 {{ level }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-2">
+                        <select name="genre" class="form-select">
+                            <option value="">所有风格</option>
+                            {% for genre in genres %}
+                            <option value="{{ genre }}" {{ 'selected' if request.args.get('genre') == genre }}>
+                                {{ genre }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-2">
+                        <select name="composer" class="form-select">
+                            <option value="">所有作曲家</option>
+                            {% for composer in composers %}
+                            <option value="{{ composer }}" {{ 'selected' if request.args.get('composer') == composer }}>
+                                {{ composer }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-filter me-1"></i>筛选
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 排序选项 -->
+    <div class="sort-section mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="sort-options">
+                <span class="text-gray me-2">排序：</span>
+                <a href="{{ url_for('main.practices', **request.args) }}&sort=title" 
+                   class="btn btn-sm {{ 'btn-primary' if request.args.get('sort') == 'title' else 'btn-outline-primary' }} me-2">
+                    按标题
+                </a>
+                <a href="{{ url_for('main.practices', **request.args) }}&sort=difficulty" 
+                   class="btn btn-sm {{ 'btn-primary' if request.args.get('sort') == 'difficulty' else 'btn-outline-primary' }} me-2">
+                    按难度
+                </a>
+                <a href="{{ url_for('main.practices', **request.args) }}&sort=created_at" 
+                   class="btn btn-sm {{ 'btn-primary' if request.args.get('sort') == 'created_at' else 'btn-outline-primary' }}">
+                    按时间
+                </a>
+            </div>
+            <div class="results-count">
+                <span class="text-gray">共 {{ practices.total }} 个结果</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 曲目列表 -->
+    <div class="practices-grid">
+        <div class="row g-4">
+            {% for practice in practices.items %}
+            <div class="col-lg-4 col-md-6">
+                <div class="practice-card card h-100">
+                    <div class="card-body">
+                        <div class="practice-header mb-3">
+                            <h5 class="card-title mb-2">{{ practice.title }}</h5>
+                            <p class="text-gray mb-2">{{ practice.composer }}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="badge bg-primary rounded-pill">难度 {{ practice.difficulty_level }}</span>
+                                {% if practice.genre %}
+                                <span class="badge bg-secondary rounded-pill">{{ practice.genre }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <p class="card-text text-gray small mb-3">
+                            {{ practice.description[:100] }}{% if practice.description|length > 100 %}...{% endif %}
+                        </p>
+                        
+                        <!-- 用户统计 -->
+                        {% if practice.id in user_stats %}
+                        <div class="user-stats mb-3 p-3 bg-light rounded">
+                            <div class="row text-center">
+                                <div class="col-4">
+                                    <div class="stat-number">{{ user_stats[practice.id].attempts }}</div>
+                                    <div class="stat-label small text-gray">练习次数</div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="stat-number">{{ user_stats[practice.id].best_score or '-' }}</div>
+                                    <div class="stat-label small text-gray">最高分</div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="stat-number">{{ user_stats[practice.id].avg_score or '-' }}</div>
+                                    <div class="stat-label small text-gray">平均分</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="practice-actions">
+                            <a href="{{ url_for('main.practice_detail', practice_id=practice.id) }}" 
+                               class="btn btn-outline-primary btn-sm me-2">
+                                <i class="fas fa-info-circle me-1"></i>详情
+                            </a>
+                            <a href="{{ url_for('main.practice_upload', practice_id=practice.id) }}" 
+                               class="btn btn-primary btn-sm">
+                                <i class="fas fa-upload me-1"></i>开始练习
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- 分页 -->
+    {% if practices.pages > 1 %}
+    <div class="pagination-section mt-5">
+        <nav aria-label="练习曲目分页">
+            <ul class="pagination justify-content-center">
+                {% if practices.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('main.practices', page=practices.prev_num, **request.args) }}">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+                {% endif %}
+                
+                {% for page_num in practices.iter_pages() %}
+                    {% if page_num %}
+                        {% if page_num != practices.page %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('main.practices', page=page_num, **request.args) }}">
+                                {{ page_num }}
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_num }}</span>
+                        </li>
+                        {% endif %}
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if practices.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('main.practices', page=practices.next_num, **request.args) }}">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+        padding: 2rem;
+        border-radius: 20px;
+        box-shadow: var(--shadow-light);
+    }
+
+    .filters-section .card {
+        border-radius: 20px;
+        box-shadow: var(--shadow-light);
+    }
+
+    .input-group-text {
+        border-radius: 100px 0 0 100px;
+    }
+
+    .input-group .form-control {
+        border-radius: 0 100px 100px 0;
+    }
+
+    .form-select {
+        border-radius: 100px;
+        padding: 10px 15px;
+        border: 1px solid var(--border-color);
+        transition: all 0.3s ease;
+    }
+
+    .form-select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(var(--primary-color-rgb), 0.25);
+    }
+
+    .practice-card {
+        transition: transform 0.3s ease;
+        border-radius: 20px;
+        box-shadow: var(--shadow-light);
+    }
+
+    .practice-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 25px 75px -2.5px rgba(0,0,0,0.1);
+    }
+
+    .practice-header h5 {
+        color: var(--text-dark);
+        font-weight: 600;
+    }
+
+    .user-stats {
+        background-color: var(--bg-light) !important;
+        border-radius: 12px;
+    }
+
+    .stat-number {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--primary-color);
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+    }
+
+    .practice-actions {
+        border-top: 1px solid var(--border-color);
+        padding-top: 1rem;
+        margin-top: auto;
+    }
+
+    .btn-sm {
+        border-radius: 100px;
+        padding: 8px 16px;
+        font-size: 0.875rem;
+    }
+
+    .sort-options .btn-sm {
+        border-radius: 100px;
+        padding: 6px 12px;
+        font-size: 0.8rem;
+    }
+
+    .pagination .page-link {
+        border-radius: 100px;
+        margin: 0 2px;
+        border: 1px solid var(--border-color);
+        color: var(--text-gray);
+        transition: all 0.3s ease;
+    }
+
+    .pagination .page-link:hover {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+        color: white;
+    }
+
+    .pagination .page-item.active .page-link {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+
+    .badge {
+        font-weight: 500;
+        padding: 0.5em 0.75em;
+    }
+
+    @media (max-width: 768px) {
+        .page-header {
+            text-align: center;
+            padding: 1.5rem;
+        }
+        
+        .sort-section {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .sort-options {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+    }
+</style>
+{% endblock %} 

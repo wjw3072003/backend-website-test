@@ -1,0 +1,298 @@
+{% extends "base.html" %}
+
+{% block title %}练习记录 - AiMusPal{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>我的练习记录</h1>
+        <a href="{{ url_for('main.practices') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> 新练习
+        </a>
+    </div>
+    
+    <!-- 统计卡片 -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center bg-primary text-white">
+                <div class="card-body">
+                    <h4>{{ stats.total_records }}</h4>
+                    <p class="mb-0">总练习次数</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center bg-success text-white">
+                <div class="card-body">
+                    <h4>{{ stats.completed_records }}</h4>
+                    <p class="mb-0">完成练习</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center bg-info text-white">
+                <div class="card-body">
+                    <h4>{{ stats.success_rate }}%</h4>
+                    <p class="mb-0">完成率</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center bg-warning text-white">
+                <div class="card-body">
+                    <h4>{{ stats.average_score }}</h4>
+                    <p class="mb-0">平均分数</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 筛选器 -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">筛选条件</h5>
+        </div>
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-3">
+                    <label for="status" class="form-label">状态</label>
+                    <select class="form-select" id="status" name="status">
+                        <option value="">全部状态</option>
+                        <option value="completed" {% if current_filters.status == 'completed' %}selected{% endif %}>已完成</option>
+                        <option value="analyzing" {% if current_filters.status == 'analyzing' %}selected{% endif %}>分析中</option>
+                        <option value="failed" {% if current_filters.status == 'failed' %}selected{% endif %}>失败</option>
+                    </select>
+                </div>
+                
+                <div class="col-md-3">
+                    <label for="practice" class="form-label">练习曲目</label>
+                    <select class="form-select" id="practice" name="practice">
+                        <option value="">全部曲目</option>
+                        {% for piece in practiced_pieces %}
+                            <option value="{{ piece.id }}" {% if current_filters.practice == piece.id %}selected{% endif %}>
+                                {{ piece.title }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-3">
+                    <label for="date" class="form-label">时间范围</label>
+                    <select class="form-select" id="date" name="date">
+                        <option value="">全部时间</option>
+                        <option value="today" {% if current_filters.date == 'today' %}selected{% endif %}>今天</option>
+                        <option value="week" {% if current_filters.date == 'week' %}selected{% endif %}>最近一周</option>
+                        <option value="month" {% if current_filters.date == 'month' %}selected{% endif %}>最近一月</option>
+                    </select>
+                </div>
+                
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="fas fa-search"></i> 筛选
+                    </button>
+                    <a href="{{ url_for('main.practice_records') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times"></i> 清除
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- 练习记录列表 -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">练习记录列表</h5>
+            <small class="text-muted">共 {{ records.total }} 条记录</small>
+        </div>
+        <div class="card-body">
+            {% if records.items %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>练习曲目</th>
+                                <th>练习时间</th>
+                                <th>分数</th>
+                                <th>节拍准确度</th>
+                                <th>音准度</th>
+                                <th>节奏准确度</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in records.items %}
+                            <tr>
+                                <td>
+                                    <div>
+                                        <strong>{{ record.practice.title }}</strong>
+                                        {% if record.practice.composer %}
+                                            <br><small class="text-muted">{{ record.practice.composer }}</small>
+                                        {% endif %}
+                                        <br>
+                                        <span class="badge bg-light text-dark">
+                                            难度: {{ record.practice.difficulty_level }}/10
+                                        </span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>
+                                        <strong>{{ record.created_at.strftime('%Y-%m-%d') }}</strong>
+                                        <br><small class="text-muted">{{ record.created_at.strftime('%H:%M:%S') }}</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if record.score %}
+                                        <span class="badge bg-{% if record.score >= 90 %}success{% elif record.score >= 80 %}primary{% elif record.score >= 70 %}warning{% else %}secondary{% endif %} fs-6">
+                                            {{ record.score }}分
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if record.tempo_accuracy %}
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar bg-{% if record.tempo_accuracy >= 85 %}success{% elif record.tempo_accuracy >= 70 %}warning{% else %}danger{% endif %}" 
+                                                 style="width: {{ record.tempo_accuracy }}%">
+                                                {{ record.tempo_accuracy }}%
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if record.pitch_accuracy %}
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar bg-{% if record.pitch_accuracy >= 85 %}success{% elif record.pitch_accuracy >= 70 %}warning{% else %}danger{% endif %}" 
+                                                 style="width: {{ record.pitch_accuracy }}%">
+                                                {{ record.pitch_accuracy }}%
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if record.rhythm_accuracy %}
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar bg-{% if record.rhythm_accuracy >= 85 %}success{% elif record.rhythm_accuracy >= 70 %}warning{% else %}danger{% endif %}" 
+                                                 style="width: {{ record.rhythm_accuracy }}%">
+                                                {{ record.rhythm_accuracy }}%
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if record.status == 'completed' %}
+                                        <span class="badge bg-success">已完成</span>
+                                    {% elif record.status == 'analyzing' %}
+                                        <span class="badge bg-warning">分析中</span>
+                                    {% elif record.status == 'failed' %}
+                                        <span class="badge bg-danger">失败</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ record.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        {% if record.status == 'completed' %}
+                                            <a href="{{ url_for('main.practice_result', record_id=record.id) }}" 
+                                               class="btn btn-outline-primary" title="查看详情">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        {% endif %}
+                                        <a href="{{ url_for('main.practice_detail', practice_id=record.practice.id) }}" 
+                                           class="btn btn-outline-secondary" title="重新练习">
+                                            <i class="fas fa-redo"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- 分页 -->
+                {% if records.pages > 1 %}
+                <nav aria-label="练习记录分页">
+                    <ul class="pagination justify-content-center">
+                        {% if records.has_prev %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('main.practice_records', page=records.prev_num, **current_filters) }}">
+                                    <i class="fas fa-chevron-left"></i> 上一页
+                                </a>
+                            </li>
+                        {% endif %}
+                        
+                        {% for page_num in records.iter_pages() %}
+                            {% if page_num %}
+                                {% if page_num != records.page %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ url_for('main.practice_records', page=page_num, **current_filters) }}">
+                                            {{ page_num }}
+                                        </a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ page_num }}</span>
+                                    </li>
+                                {% endif %}
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">…</span>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if records.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('main.practice_records', page=records.next_num, **current_filters) }}">
+                                    下一页 <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+                
+            {% else %}
+                <!-- 无记录状态 -->
+                <div class="text-center py-5">
+                    <i class="fas fa-history fa-4x text-muted mb-3"></i>
+                    <h4>还没有练习记录</h4>
+                    {% if current_filters.status or current_filters.practice or current_filters.date %}
+                        <p class="text-muted mb-3">当前筛选条件下没有找到记录，试试调整筛选条件</p>
+                        <a href="{{ url_for('main.practice_records') }}" class="btn btn-outline-secondary me-2">
+                            <i class="fas fa-times"></i> 清除筛选
+                        </a>
+                    {% else %}
+                        <p class="text-muted mb-3">开始您的第一次练习吧！</p>
+                    {% endif %}
+                    <a href="{{ url_for('main.practices') }}" class="btn btn-primary">
+                        <i class="fas fa-play"></i> 开始练习
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // 自动提交筛选表单
+    $('.form-select').on('change', function() {
+        // 延迟提交，给用户时间看到选择
+        setTimeout(function() {
+            $('form').submit();
+        }, 300);
+    });
+});
+</script>
+{% endblock %} 

@@ -4,9 +4,10 @@ services:
   web:
     build: .
     ports:
-      - "5000:5000"
+      - "5005:5005"
     environment:
-      - FLASK_ENV=production
+      - FLASK_ENV=development
+      - FLASK_DEBUG=1
       - DATABASE_URL=mysql+pymysql://aimuspal:password123@db:3306/aimuspal_db
       - REDIS_URL=redis://redis:6379/0
       - SECRET_KEY=your-secret-key-change-in-production
@@ -16,6 +17,12 @@ services:
       - redis
     volumes:
       - ./uploads:/app/uploads
+      - ./app:/app/app
+      - ./static:/app/static
+      - ./aimuspal_homepage.html:/app/aimuspal_homepage.html
+      - ./config.py:/app/config.py
+      - ./app.py:/app/app.py
+      - ./requirements.txt:/app/requirements.txt
     restart: unless-stopped
 
   db:

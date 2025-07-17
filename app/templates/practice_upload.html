@@ -1,0 +1,280 @@
+{% extends "base.html" %}
+
+{% block title %}上传练习录音 - {{ practice.title }} - AiMusPal{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- 返回按钮 -->
+    <div class="mb-3">
+        <a href="{{ url_for('main.practice_detail', practice_id=practice.id) }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> 返回详情页
+        </a>
+    </div>
+
+    <!-- 曲目信息 -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3 class="mb-0">
+                <i class="fas fa-microphone text-primary"></i> 
+                上传练习录音 - {{ practice.title }}
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>作曲家:</strong> {{ practice.composer or '未知' }}</p>
+                    <p><strong>风格:</strong> {{ practice.genre or '未分类' }}</p>
+                    <p><strong>难度:</strong> 
+                        {% for i in range(practice.difficulty_level) %}
+                            <i class="fas fa-star text-warning"></i>
+                        {% endfor %}
+                        {% for i in range(10 - practice.difficulty_level) %}
+                            <i class="far fa-star text-muted"></i>
+                        {% endfor %}
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    {% if practice.description %}
+                    <div class="alert alert-info">
+                        <strong>练习提示:</strong><br>{{ practice.description }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 上传表单 -->
+    <div class="card">
+        <div class="card-header">
+            <h4 class="mb-0">上传音频文件</h4>
+        </div>
+        <div class="card-body">
+            <!-- 上传说明 -->
+            <div class="alert alert-info mb-4">
+                <h5><i class="fas fa-info-circle"></i> 上传说明</h5>
+                <ul class="mb-0">
+                    <li>支持的音频格式：MP3, WAV, M4A, FLAC</li>
+                    <li>文件大小限制：最大 50MB</li>
+                    <li>录音建议：确保录音清晰，避免背景噪音</li>
+                    <li>AI将分析您的演奏技巧并给出专业反馈</li>
+                </ul>
+            </div>
+
+            <form id="upload-form" method="POST" enctype="multipart/form-data">
+                <div class="mb-4">
+                    <label for="audio_file" class="form-label">选择音频文件</label>
+                    <div class="input-group">
+                        <input type="file" class="form-control" id="audio_file" name="audio_file" 
+                               accept="audio/*" required>
+                        <button type="button" class="btn btn-outline-secondary" id="clear-file">
+                            <i class="fas fa-times"></i> 清除
+                        </button>
+                    </div>
+                    <div class="form-text">请选择您的练习录音文件</div>
+                </div>
+
+                <!-- 音频预览 -->
+                <div id="audio-preview" class="mb-4" style="display: none;">
+                    <label class="form-label">音频预览</label>
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <audio id="audio-player" controls class="w-100" preload="metadata">
+                                您的浏览器不支持音频播放器。
+                            </audio>
+                            <div class="mt-2">
+                                <small class="text-muted">
+                                    <span id="file-info"></span>
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 上传进度 -->
+                <div id="upload-progress" class="mb-4" style="display: none;">
+                    <label class="form-label">上传进度</label>
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                             role="progressbar" style="width: 0%">
+                            <span class="progress-text">0%</span>
+                        </div>
+                    </div>
+                    <small class="text-muted mt-1">正在上传音频文件...</small>
+                </div>
+
+                <!-- AI分析状态 -->
+                <div id="analysis-status" class="mb-4" style="display: none;">
+                    <div class="alert alert-warning">
+                        <div class="d-flex align-items-center">
+                            <div class="spinner-border spinner-border-sm me-3" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <div>
+                                <strong>AI正在分析您的演奏...</strong><br>
+                                <small>这可能需要几分钟时间，请耐心等待</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 提交按钮 -->
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary btn-lg" id="submit-btn">
+                        <i class="fas fa-upload"></i> 上传并开始AI分析
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 历史记录 -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5 class="mb-0">最近练习记录</h5>
+        </div>
+        <div class="card-body">
+            <div class="text-center text-muted">
+                <i class="fas fa-clock"></i> 
+                上传完成后可在<a href="{{ url_for('main.practice_detail', practice_id=practice.id) }}">详情页</a>查看所有练习记录
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    const audioFileInput = $('#audio_file');
+    const audioPreview = $('#audio-preview');
+    const audioPlayer = $('#audio-player');
+    const fileInfo = $('#file-info');
+    const uploadForm = $('#upload-form');
+    const submitBtn = $('#submit-btn');
+    const uploadProgress = $('#upload-progress');
+    const analysisStatus = $('#analysis-status');
+    const clearFileBtn = $('#clear-file');
+
+    // 文件选择事件
+    audioFileInput.on('change', function() {
+        const file = this.files[0];
+        if (file) {
+            // 显示文件信息
+            const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+            fileInfo.text(`${file.name} (${fileSizeMB} MB)`);
+            
+            // 创建音频预览
+            const url = URL.createObjectURL(file);
+            audioPlayer.attr('src', url);
+            audioPreview.show();
+            
+            // 验证文件大小
+            if (file.size > 50 * 1024 * 1024) { // 50MB
+                alert('文件大小超过50MB限制，请选择较小的文件。');
+                clearFile();
+                return;
+            }
+            
+            // 验证文件类型
+            const allowedTypes = ['audio/mpeg', 'audio/wav', 'audio/mp4', 'audio/flac', 'audio/x-flac'];
+            if (!allowedTypes.includes(file.type)) {
+                alert('不支持的文件格式，请选择MP3、WAV、M4A或FLAC格式的音频文件。');
+                clearFile();
+                return;
+            }
+        } else {
+            clearFile();
+        }
+    });
+
+    // 清除文件
+    clearFileBtn.on('click', clearFile);
+    
+    function clearFile() {
+        audioFileInput.val('');
+        audioPreview.hide();
+        audioPlayer.attr('src', '');
+        fileInfo.text('');
+    }
+
+    // 表单提交
+    uploadForm.on('submit', function(e) {
+        e.preventDefault();
+        
+        const file = audioFileInput[0].files[0];
+        if (!file) {
+            alert('请选择音频文件');
+            return;
+        }
+
+        // 禁用提交按钮
+        submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> 上传中...');
+        
+        // 显示上传进度
+        uploadProgress.show();
+        
+        // 创建FormData
+        const formData = new FormData(this);
+        
+        // 使用XMLHttpRequest上传以显示进度
+        const xhr = new XMLHttpRequest();
+        
+        xhr.upload.addEventListener('progress', function(e) {
+            if (e.lengthComputable) {
+                const percentComplete = (e.loaded / e.total) * 100;
+                $('.progress-bar').css('width', percentComplete + '%');
+                $('.progress-text').text(Math.round(percentComplete) + '%');
+            }
+        });
+        
+        xhr.addEventListener('load', function() {
+            if (xhr.status === 200) {
+                // 上传成功，显示AI分析状态
+                uploadProgress.hide();
+                analysisStatus.show();
+                
+                // 模拟AI分析过程（实际情况下后端会处理）
+                setTimeout(function() {
+                    // 重定向到结果页面或详情页面
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.redirect_url) {
+                            window.location.href = response.redirect_url;
+                        } else {
+                            // 如果没有重定向URL，回到详情页
+                            window.location.href = "{{ url_for('main.practice_detail', practice_id=practice.id) }}";
+                        }
+                    } catch (e) {
+                        // 如果响应不是JSON，假设是页面重定向
+                        window.location.href = "{{ url_for('main.practice_detail', practice_id=practice.id) }}";
+                    }
+                }, 2000);
+            } else {
+                // 上传失败
+                uploadProgress.hide();
+                analysisStatus.hide();
+                submitBtn.prop('disabled', false).html('<i class="fas fa-upload"></i> 上传并开始AI分析');
+                
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    alert('上传失败：' + (response.error || '未知错误'));
+                } catch (e) {
+                    alert('上传失败，请稍后重试');
+                }
+            }
+        });
+        
+        xhr.addEventListener('error', function() {
+            uploadProgress.hide();
+            analysisStatus.hide();
+            submitBtn.prop('disabled', false).html('<i class="fas fa-upload"></i> 上传并开始AI分析');
+            alert('网络错误，请检查连接后重试');
+        });
+        
+        xhr.open('POST', '{{ url_for("main.practice_upload", practice_id=practice.id) }}');
+        xhr.send(formData);
+    });
+});
+</script>
+{% endblock %} 

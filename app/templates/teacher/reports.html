@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+
+{% block title %}教学报告 - AiMusPal{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>教学报告</h1>
+        <div class="d-flex gap-2">
+            <button class="btn btn-primary" onclick="exportReport()">
+                <i class="fas fa-download"></i> 导出报告
+            </button>
+            <a href="{{ url_for('teacher.teacher_dashboard') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> 返回仪表板
+            </a>
+        </div>
+    </div>
+
+    <!-- 报告筛选 -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <label for="reportType" class="form-label">报告类型</label>
+                    <select class="form-select" id="reportType">
+                        <option value="overall">整体概览</option>
+                        <option value="class">班级详情</option>
+                        <option value="student">学生分析</option>
+                        <option value="progress">进度报告</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="timeRange" class="form-label">时间范围</label>
+                    <select class="form-select" id="timeRange">
+                        <option value="week">近一周</option>
+                        <option value="month" selected>近一月</option>
+                        <option value="quarter">近三月</option>
+                        <option value="year">近一年</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="classSelect" class="form-label">选择班级</label>
+                    <select class="form-select" id="classSelect">
+                        <option value="">所有班级</option>
+                        {% for class in classes %}
+                        <option value="{{ class.id }}">{{ class.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button class="btn btn-success w-100" onclick="generateReport()">
+                        <i class="fas fa-chart-bar"></i> 生成报告
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 总体统计 -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-users fs-1 text-primary mb-2"></i>
+                    <h5>总学生数</h5>
+                    <h2 class="text-primary">{{ stats.total_students or 0 }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-clipboard-list fs-1 text-success mb-2"></i>
+                    <h5>活跃作业</h5>
+                    <h2 class="text-success">{{ stats.active_assignments or 0 }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-star fs-1 text-warning mb-2"></i>
+                    <h5>平均分数</h5>
+                    <h2 class="text-warning">{{ "%.1f"|format(stats.average_score or 0) }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-chart-line fs-1 text-info mb-2"></i>
+                    <h5>完成率</h5>
+                    <h2 class="text-info">{{ "%.1f"|format(stats.completion_rate or 0) }}%</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- 学习进度图表 -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">学习进度趋势</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="progressChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- 班级排行 -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">班级表现排行</h5>
+                </div>
+                <div class="card-body">
+                    {% for class in class_rankings %}
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <strong>{{ class.name }}</strong>
+                            <br>
+                            <small class="text-muted">{{ class.student_count }} 名学生</small>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-{{ 'success' if class.avg_score >= 80 else 'warning' if class.avg_score >= 60 else 'danger' }} fs-6">
+                                {{ "%.1f"|format(class.avg_score) }}
+                            </span>
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center">暂无班级数据</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 学生详细表现 -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">学生表现详情</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>学生姓名</th>
+                                    <th>所属班级</th>
+                                    <th>练习次数</th>
+                                    <th>平均分数</th>
+                                    <th>完成作业</th>
+                                    <th>最后活跃</th>
+                                    <th>进度状态</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for student in student_performance %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ student.username }}</strong>
+                                        {% if student.real_name %}
+                                            <br><small class="text-muted">{{ student.real_name }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% for class in student.classes %}
+                                            <span class="badge bg-info me-1">{{ class.name }}</span>
+                                        {% else %}
+                                            <span class="text-muted">未分配</span>
+                                        {% endfor %}
+                                    </td>
+                                    <td>{{ student.practice_count or 0 }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if student.avg_score >= 80 else 'warning' if student.avg_score >= 60 else 'danger' }}">
+                                            {{ "%.1f"|format(student.avg_score or 0) }}
+                                        </span>
+                                    </td>
+                                    <td>{{ student.completed_assignments or 0 }}/{{ student.total_assignments or 0 }}</td>
+                                    <td>
+                                        {% if student.last_active %}
+                                            {{ student.last_active.strftime('%m-%d %H:%M') }}
+                                        {% else %}
+                                            <span class="text-muted">未知</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% set progress = (student.completed_assignments or 0) / (student.total_assignments or 1) * 100 %}
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar bg-{{ 'success' if progress >= 80 else 'warning' if progress >= 60 else 'danger' }}" 
+                                                 style="width: {{ progress }}%">
+                                                {{ "%.0f"|format(progress) }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="7" class="text-center py-4">
+                                        <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
+                                        <p class="text-muted">暂无学生数据</p>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// 初始化进度图表
+const ctx = document.getElementById('progressChart').getContext('2d');
+const progressChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: ['第1周', '第2周', '第3周', '第4周'],
+        datasets: [{
+            label: '平均分数',
+            data: [65, 72, 78, 85],
+            borderColor: 'rgb(75, 192, 192)',
+            backgroundColor: 'rgba(75, 192, 192, 0.1)',
+            tension: 0.1
+        }, {
+            label: '完成率',
+            data: [60, 68, 75, 82],
+            borderColor: 'rgb(255, 99, 132)',
+            backgroundColor: 'rgba(255, 99, 132, 0.1)',
+            tension: 0.1
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true,
+                max: 100
+            }
+        }
+    }
+});
+
+function generateReport() {
+    const reportType = document.getElementById('reportType').value;
+    const timeRange = document.getElementById('timeRange').value;
+    const classId = document.getElementById('classSelect').value;
+    
+    // 这里可以发送AJAX请求重新生成报告
+    console.log('生成报告:', reportType, timeRange, classId);
+    
+    // 刷新页面或更新图表数据
+    location.reload();
+}
+
+function exportReport() {
+    // 导出报告功能
+    const reportData = {
+        type: document.getElementById('reportType').value,
+        timeRange: document.getElementById('timeRange').value,
+        classId: document.getElementById('classSelect').value
+    };
+    
+    // 可以实现PDF导出或Excel导出
+    alert('导出功能开发中...');
+}
+</script>
+{% endblock %} 

@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM python:3.9-slim
 
 WORKDIR /app
 
@@ -23,11 +23,11 @@ RUN adduser --disabled-password --gecos '' appuser && chown -R appuser:appuser /
 USER appuser
 
 # 暴露端口
-EXPOSE 5000
+EXPOSE 5005
 
 # 设置环境变量
 ENV FLASK_APP=app.py
-ENV FLASK_ENV=production
+ENV FLASK_ENV=development
 
-# 启动命令
-CMD ["python", "app.py"]
+# 启动命令 - 使用flask run支持热重载
+CMD ["flask", "run", "--host=0.0.0.0", "--port=5005", "--reload"]

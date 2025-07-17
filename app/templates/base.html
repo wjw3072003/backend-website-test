@@ -61,6 +61,9 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('main.practices') }}">练习曲目</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.user_stats') }}">学习统计</a>
+                    </li>
                     {% if current_user.has_role('admin') or current_user.has_role('teacher') %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('admin.dashboard') }}">管理后台</a>
@@ -126,8 +129,8 @@
                 <div class="col-md-6 text-end">
                     <p class="mb-0">
                         <a href="{{ url_for('main.contact') }}" class="text-decoration-none">联系我们</a> |
-                        <a href="#" class="text-decoration-none">隐私政策</a> |
-                        <a href="#" class="text-decoration-none">服务条款</a>
+                        <a href="{{ url_for('main.privacy') }}" class="text-decoration-none">隐私政策</a> |
+                        <a href="{{ url_for('main.terms') }}" class="text-decoration-none">服务条款</a>
                     </p>
                 </div>
             </div>

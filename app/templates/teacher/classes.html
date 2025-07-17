@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block title %}班级管理 - AiMusPal{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>班级管理</h1>
+        <div class="d-flex gap-2">
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createClassModal">
+                <i class="fas fa-plus"></i> 创建班级
+            </button>
+            <a href="{{ url_for('teacher.teacher_dashboard') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> 返回仪表板
+            </a>
+        </div>
+    </div>
+
+    <!-- 班级卡片列表 -->
+    <div class="row">
+        {% for class in classes %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">{{ class.name }}</h5>
+                    <span class="badge bg-{{ 'success' if class.is_active else 'secondary' }}">
+                        {{ '活跃' if class.is_active else '非活跃' }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">{{ class.description or '暂无描述' }}</p>
+                    
+                    <div class="row text-center mb-3">
+                        <div class="col-4">
+                            <strong class="text-primary">{{ class.students|length }}</strong>
+                            <small class="d-block text-muted">学生</small>
+                        </div>
+                        <div class="col-4">
+                            <strong class="text-success">{{ class.assignments|length if class.assignments else 0 }}</strong>
+                            <small class="d-block text-muted">作业</small>
+                        </div>
+                        <div class="col-4">
+                            <strong class="text-info">{{ class.grade_level or '-' }}</strong>
+                            <small class="d-block text-muted">年级</small>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-2">
+                        <small class="text-muted">
+                            <i class="fas fa-code"></i> 班级代码: {{ class.code }}
+                        </small>
+                    </div>
+                    
+                    <div class="mb-2">
+                        <small class="text-muted">
+                            <i class="fas fa-calendar"></i> 创建时间: {{ class.created_at.strftime('%Y-%m-%d') }}
+                        </small>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="btn-group w-100" role="group">
+                        <a href="{{ url_for('teacher.view_class', class_id=class.id) }}" 
+                           class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-eye"></i> 查看
+                        </a>
+                        <button class="btn btn-outline-secondary btn-sm" 
+                                onclick="editClass({{ class.id }})">
+                            <i class="fas fa-edit"></i> 编辑
+                        </button>
+                        <button class="btn btn-outline-info btn-sm" 
+                                onclick="manageStudents({{ class.id }})">
+                            <i class="fas fa-users"></i> 学生
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12">
+            <div class="text-center py-5">
+                <i class="fas fa-chalkboard-teacher fa-5x text-muted mb-4"></i>
+                <h3 class="text-muted">暂无班级</h3>
+                <p class="text-muted">点击"创建班级"开始教学之旅</p>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createClassModal">
+                    <i class="fas fa-plus"></i> 创建第一个班级
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- 创建班级模态框 -->
+<div class="modal fade" id="createClassModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">创建新班级</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('teacher.create_class') }}">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="className" class="form-label">班级名称 *</label>
+                                <input type="text" class="form-control" id="className" name="name" 
+                                       placeholder="例: 音乐基础班" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="classCode" class="form-label">班级代码 *</label>
+                                <input type="text" class="form-control" id="classCode" name="code" 
+                                       placeholder="例: MUS001" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="gradeLevel" class="form-label">年级水平</label>
+                                <select class="form-select" id="gradeLevel" name="grade_level">
+                                    <option value="">请选择</option>
+                                    <option value="初级">初级</option>
+                                    <option value="中级">中级</option>
+                                    <option value="高级">高级</option>
+                                    <option value="专业">专业</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="subject" class="form-label">学科</label>
+                                <select class="form-select" id="subject" name="subject">
+                                    <option value="">请选择</option>
+                                    <option value="钢琴">钢琴</option>
+                                    <option value="小提琴">小提琴</option>
+                                    <option value="吉他">吉他</option>
+                                    <option value="声乐">声乐</option>
+                                    <option value="音乐理论">音乐理论</option>
+                                    <option value="其他">其他</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">班级描述</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"
+                                  placeholder="介绍班级的教学目标、内容等..."></textarea>
+                    </div>
+                    
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="isActive" name="is_active" checked>
+                        <label class="form-check-label" for="isActive">
+                            立即激活班级
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">创建班级</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function editClass(classId) {
+    window.location.href = '/teacher/class/' + classId + '/edit';
+}
+
+function manageStudents(classId) {
+    window.location.href = '/teacher/class/' + classId + '/students';
+}
+
+// 自动生成班级代码
+document.getElementById('className').addEventListener('input', function() {
+    var name = this.value;
+    var code = name.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, '').toUpperCase().substring(0, 6);
+    if (code.length < 3) {
+        code += '001';
+    }
+    document.getElementById('classCode').value = code;
+});
+</script>
+{% endblock %} 

@@ -35,30 +35,73 @@
             <div class="card shadow">
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-bordered">
-                            <thead>
+                        <table class="table table-hover">
+                            <thead class="table-dark">
                                 <tr>
                                     <th>ID</th>
                                     <th>用户</th>
                                     <th>练习曲目</th>
+                                    <th>状态</th>
                                     <th>分数</th>
+                                    <th>准确度</th>
                                     <th>练习时间</th>
+                                    <th>操作</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for record in records %}
-                                <tr>
-                                    <td>{{ record.id }}</td>
-                                    <td>{{ record.user.username if record.user else '-' }}</td>
-                                    <td>{{ record.practice.title if record.practice else '-' }}</td>
-                                    <td>{{ record.score or '-' }}</td>
-                                    <td>{{ record.created_at.strftime('%Y-%m-%d %H:%M') if record.created_at else '-' }}</td>
-                                </tr>
+                                {% if records.items %}
+                                    {% for record in records.items %}
+                                    <tr>
+                                        <td>{{ record.id }}</td>
+                                        <td>
+                                            <a href="{{ url_for('admin.user_detail', user_id=record.user.id) }}" 
+                                               class="text-decoration-none">
+                                                {{ record.user.username if record.user else '-' }}
+                                            </a>
+                                        </td>
+                                        <td>{{ record.practice.title if record.practice else '-' }}</td>
+                                        <td>
+                                            {% if record.status == 'completed' %}
+                                                <span class="badge bg-success">已完成</span>
+                                            {% elif record.status == 'analyzing' %}
+                                                <span class="badge bg-warning">分析中</span>
+                                            {% elif record.status == 'failed' %}
+                                                <span class="badge bg-danger">失败</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">{{ record.status }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if record.score %}
+                                                <span class="badge bg-primary">{{ record.score }}</span>
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <small>
+                                                节拍: {{ record.tempo_accuracy or '-' }}%<br>
+                                                音高: {{ record.pitch_accuracy or '-' }}%<br>
+                                                节奏: {{ record.rhythm_accuracy or '-' }}%
+                                            </small>
+                                        </td>
+                                        <td>{{ record.created_at.strftime('%Y-%m-%d %H:%M') if record.created_at else '-' }}</td>
+                                        <td>
+                                            <a href="{{ url_for('admin.practice_record_detail', record_id=record.id) }}" 
+                                               class="btn btn-outline-primary btn-sm" title="查看详情">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
                                 {% else %}
-                                <tr>
-                                    <td colspan="5" class="text-center text-muted">暂无练习记录</td>
-                                </tr>
-                                {% endfor %}
+                                    <tr>
+                                        <td colspan="8" class="text-center text-muted py-4">
+                                            <i class="fas fa-history fa-2x mb-2"></i><br>
+                                            暂无练习记录
+                                        </td>
+                                    </tr>
+                                {% endif %}
                             </tbody>
                         </table>
                     </div>

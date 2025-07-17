@@ -1,0 +1,285 @@
+{% extends "base_new.html" %}
+
+{% block title %}AI MusPal - Empowering Violin Practice with AI Feedback{% endblock %}
+
+{% block content %}
+<!-- 英雄区域 -->
+<section class="hero-section py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <div class="hero-content">
+                    <h1 class="display-4 fw-bold mb-4">
+                        AI MusPal
+                        <span class="text-primary">Anytime, Anywhere.</span>
+                    </h1>
+                    <h2 class="h3 mb-4 text-gray">智能音乐教育平台</h2>
+                    <p class="lead mb-4">
+                        使用AI技术分析您的音乐练习，提供个性化反馈，让音乐学习更高效、更有趣。
+                    </p>
+                    <div class="d-flex gap-3 flex-wrap">
+                        {% if not current_user.is_authenticated %}
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-rocket me-2"></i>免费注册
+                        </a>
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary btn-lg">
+                            <i class="fas fa-sign-in-alt me-2"></i>登录
+                        </a>
+                        {% else %}
+                        <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-tachometer-alt me-2"></i>进入仪表板
+                        </a>
+                        <a href="{{ url_for('main.practices') }}" class="btn btn-outline-primary btn-lg">
+                            <i class="fas fa-music me-2"></i>开始练习
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                <div class="hero-image">
+                    <i class="fas fa-robot display-1 text-primary opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 特色功能 -->
+<section class="features-section py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="h1 mb-3">平台特色</h2>
+            <p class="lead text-gray">AI驱动的音乐教育解决方案</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon mb-4">
+                            <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                                <i class="fas fa-brain text-white fs-1"></i>
+                            </div>
+                        </div>
+                        <h4 class="card-title">AI智能分析</h4>
+                        <p class="card-text text-gray">
+                            先进的AI技术实时分析您的演奏，从节拍、音准、节奏等多个维度提供精准评估。
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon mb-4">
+                            <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                                <i class="fas fa-comments text-white fs-1"></i>
+                            </div>
+                        </div>
+                        <h4 class="card-title">个性化反馈</h4>
+                        <p class="card-text text-gray">
+                            根据您的演奏水平和学习进度，提供量身定制的练习建议和改进方案。
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon mb-4">
+                            <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                                <i class="fas fa-chart-line text-white fs-1"></i>
+                            </div>
+                        </div>
+                        <h4 class="card-title">学习追踪</h4>
+                        <p class="card-text text-gray">
+                            详细记录您的学习历程，可视化展示进步轨迹，让每一次练习都有明确目标。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 工作流程 -->
+<section class="workflow-section py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="h1 mb-3">如何使用</h2>
+            <p class="lead text-gray">简单三步，开启智能音乐学习之旅</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4 text-center">
+                <div class="workflow-step">
+                    <div class="step-number mb-4">
+                        <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                            <span class="text-white fw-bold fs-4">1</span>
+                        </div>
+                    </div>
+                    <h4>选择曲目</h4>
+                    <p class="text-gray">从我们精心准备的曲库中选择适合您水平的练习曲目</p>
+                </div>
+            </div>
+            
+            <div class="col-md-4 text-center">
+                <div class="workflow-step">
+                    <div class="step-number mb-4">
+                        <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                            <span class="text-white fw-bold fs-4">2</span>
+                        </div>
+                    </div>
+                    <h4>录制演奏</h4>
+                    <p class="text-gray">使用手机或电脑录制您的演奏音频，上传到平台</p>
+                </div>
+            </div>
+            
+            <div class="col-md-4 text-center">
+                <div class="workflow-step">
+                    <div class="step-number mb-4">
+                        <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                            <span class="text-white fw-bold fs-4">3</span>
+                        </div>
+                    </div>
+                    <h4>获得反馈</h4>
+                    <p class="text-gray">AI分析完成后，获得详细的演奏评估和改进建议</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 统计数据 -->
+<section class="stats-section py-5 bg-primary text-white">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-md-3 col-6 mb-4">
+                <div class="stat-item">
+                    <div class="display-4 fw-bold">1000+</div>
+                    <p class="mb-0">注册用户</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-6 mb-4">
+                <div class="stat-item">
+                    <div class="display-4 fw-bold">500+</div>
+                    <p class="mb-0">练习曲目</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-6 mb-4">
+                <div class="stat-item">
+                    <div class="display-4 fw-bold">10000+</div>
+                    <p class="mb-0">练习记录</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-6 mb-4">
+                <div class="stat-item">
+                    <div class="display-4 fw-bold">95%</div>
+                    <p class="mb-0">用户满意度</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 行动号召 -->
+<section class="cta-section py-5">
+    <div class="container text-center">
+        <h2 class="h1 mb-4">准备开始您的音乐学习之旅了吗？</h2>
+        <p class="lead text-gray mb-4">加入我们，体验AI驱动的个性化音乐教育</p>
+        {% if not current_user.is_authenticated %}
+        <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg me-3">
+            <i class="fas fa-rocket me-2"></i>免费注册
+        </a>
+        <a href="{{ url_for('main.about') }}" class="btn btn-outline-primary btn-lg">
+            <i class="fas fa-info-circle me-2"></i>了解更多
+        </a>
+        {% else %}
+        <a href="{{ url_for('main.practices') }}" class="btn btn-primary btn-lg">
+            <i class="fas fa-play me-2"></i>开始练习
+        </a>
+        {% endif %}
+    </div>
+</section>
+
+<style>
+    .hero-section {
+        background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+    }
+
+    .hero-content h1 {
+        font-size: 3.5rem;
+        line-height: 1.2;
+    }
+
+    .hero-image {
+        animation: float 6s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-20px); }
+    }
+
+    .features-section {
+        background-color: var(--bg-light);
+    }
+
+    .feature-icon {
+        transition: transform 0.3s ease;
+    }
+
+    .card:hover .feature-icon {
+        transform: scale(1.1);
+    }
+
+    .workflow-step {
+        padding: 2rem 1rem;
+    }
+
+    .step-number {
+        transition: transform 0.3s ease;
+    }
+
+    .workflow-step:hover .step-number {
+        transform: scale(1.1);
+    }
+
+    .stats-section {
+        background: linear-gradient(135deg, var(--primary-color) 0%, #e54d3a 100%);
+    }
+
+    .stat-item {
+        transition: transform 0.3s ease;
+    }
+
+    .stat-item:hover {
+        transform: translateY(-5px);
+    }
+
+    .cta-section {
+        background-color: var(--bg-white);
+    }
+
+    .text-gray {
+        color: var(--text-gray);
+    }
+
+    @media (max-width: 768px) {
+        .hero-content h1 {
+            font-size: 2.5rem;
+        }
+        
+        .hero-section {
+            min-height: 60vh;
+            text-align: center;
+        }
+    }
+</style>
+{% endblock %} 

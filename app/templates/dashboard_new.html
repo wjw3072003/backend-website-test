@@ -1,0 +1,283 @@
+{% extends "base_new.html" %}
+
+{% block title %}仪表板 - AI MusPal{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- 欢迎区域 -->
+    <div class="welcome-section mb-5">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="h2 mb-2">欢迎回来，{{ current_user.username }}！</h1>
+                <p class="text-gray mb-0">继续您的音乐学习之旅，让AI助您进步</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <a href="{{ url_for('main.practices') }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>开始新练习
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 统计卡片 -->
+    <div class="stats-cards mb-5">
+        <div class="row g-4">
+            <div class="col-md-3 col-sm-6">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon bg-primary rounded-circle d-flex align-items-center justify-content-center me-3">
+                                <i class="fas fa-music text-white"></i>
+                            </div>
+                            <div>
+                                <h3 class="mb-1">{{ stats.total_practices }}</h3>
+                                <p class="text-gray mb-0">总练习次数</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3 col-sm-6">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon bg-success rounded-circle d-flex align-items-center justify-content-center me-3">
+                                <i class="fas fa-star text-white"></i>
+                            </div>
+                            <div>
+                                <h3 class="mb-1">{{ stats.average_score }}</h3>
+                                <p class="text-gray mb-0">平均分数</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3 col-sm-6">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon bg-info rounded-circle d-flex align-items-center justify-content-center me-3">
+                                <i class="fas fa-calendar text-white"></i>
+                            </div>
+                            <div>
+                                <h3 class="mb-1">{{ stats.monthly_practices }}</h3>
+                                <p class="text-gray mb-0">本月练习</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3 col-sm-6">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon bg-warning rounded-circle d-flex align-items-center justify-content-center me-3">
+                                <i class="fas fa-bullseye text-white"></i>
+                            </div>
+                            <div>
+                                <h3 class="mb-1">{{ stats.monthly_goal }}</h3>
+                                <p class="text-gray mb-0">月度目标</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- 最近练习记录 -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-transparent border-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">
+                            <i class="fas fa-history me-2 text-primary"></i>最近练习记录
+                        </h4>
+                        <a href="{{ url_for('main.practice_records') }}" class="btn btn-outline-primary btn-sm">
+                            查看全部
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if stats.recent_records %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>曲目</th>
+                                        <th>作曲家</th>
+                                        <th>分数</th>
+                                        <th>状态</th>
+                                        <th>时间</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for record in stats.recent_records %}
+                                    <tr>
+                                        <td>
+                                            <a href="{{ url_for('main.practice_result', record_id=record.id) }}" class="text-decoration-none">
+                                                {{ record.practice_title }}
+                                            </a>
+                                        </td>
+                                        <td class="text-gray">{{ record.practice_composer }}</td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if record.score >= 80 else 'warning' if record.score >= 60 else 'danger' }} rounded-pill">
+                                                {{ record.score }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if record.status == 'completed' else 'warning' if record.status == 'in_progress' else 'secondary' }} rounded-pill">
+                                                {{ {'completed': '已完成', 'in_progress': '进行中', 'pending': '待处理'}[record.status] }}
+                                            </span>
+                                        </td>
+                                        <td class="text-gray">{{ record.created_at.strftime('%m-%d %H:%M') }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-music text-gray mb-3" style="font-size: 3rem;"></i>
+                            <h5 class="text-gray">还没有练习记录</h5>
+                            <p class="text-gray">开始您的第一次练习吧！</p>
+                            <a href="{{ url_for('main.practices') }}" class="btn btn-primary">
+                                <i class="fas fa-play me-2"></i>开始练习
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- 推荐练习 -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header bg-transparent border-0">
+                    <h4 class="mb-0">
+                        <i class="fas fa-lightbulb me-2 text-primary"></i>推荐练习
+                    </h4>
+                </div>
+                <div class="card-body">
+                    {% if stats.recommended_practices %}
+                        {% for practice in stats.recommended_practices %}
+                        <div class="recommended-practice mb-3 p-3 border rounded">
+                            <h6 class="mb-2">{{ practice.title }}</h6>
+                            <p class="text-gray small mb-2">{{ practice.composer }}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="badge bg-primary rounded-pill">难度 {{ practice.difficulty_level }}</span>
+                                <a href="{{ url_for('main.practice_detail', practice_id=practice.id) }}" class="btn btn-outline-primary btn-sm">
+                                    查看详情
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-lightbulb text-gray mb-3" style="font-size: 2rem;"></i>
+                            <p class="text-gray">暂无推荐练习</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- 快速操作 -->
+            <div class="card mt-4">
+                <div class="card-header bg-transparent border-0">
+                    <h4 class="mb-0">
+                        <i class="fas fa-bolt me-2 text-primary"></i>快速操作
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('main.practices') }}" class="btn btn-primary">
+                            <i class="fas fa-music me-2"></i>浏览曲目
+                        </a>
+                        <a href="{{ url_for('main.user_stats') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-chart-line me-2"></i>查看统计
+                        </a>
+                        <a href="{{ url_for('auth.profile') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-user me-2"></i>个人资料
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .welcome-section {
+        background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+        padding: 2rem;
+        border-radius: 20px;
+        box-shadow: var(--shadow-light);
+    }
+
+    .stat-card {
+        transition: transform 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+    }
+
+    .stat-card h3 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-dark);
+    }
+
+    .recommended-practice {
+        transition: all 0.3s ease;
+        border-color: var(--border-color) !important;
+    }
+
+    .recommended-practice:hover {
+        border-color: var(--primary-color) !important;
+        box-shadow: var(--shadow-light);
+    }
+
+    .table th {
+        font-weight: 600;
+        color: var(--text-dark);
+        border-bottom: 2px solid var(--border-color);
+    }
+
+    .table td {
+        vertical-align: middle;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .badge {
+        font-weight: 500;
+    }
+
+    .card-header {
+        padding: 1.5rem 1.5rem 0;
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    @media (max-width: 768px) {
+        .welcome-section {
+            text-align: center;
+        }
+        
+        .stat-card {
+            margin-bottom: 1rem;
+        }
+    }
+</style>
+{% endblock %} 

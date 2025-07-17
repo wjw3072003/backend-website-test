@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+
+{% block title %}作业管理 - AiMusPal{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>作业管理</h1>
+        <div class="d-flex gap-2">
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createAssignmentModal">
+                <i class="fas fa-plus"></i> 布置作业
+            </button>
+            <a href="{{ url_for('teacher.teacher_dashboard') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> 返回仪表板
+            </a>
+        </div>
+    </div>
+
+    <!-- 筛选和搜索 -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="input-group">
+                <input type="text" class="form-control" id="searchInput" placeholder="搜索作业标题...">
+                <button class="btn btn-outline-secondary" type="button">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <select class="form-select" id="classFilter">
+                <option value="">所有班级</option>
+                {% for class in classes %}
+                <option value="{{ class.id }}">{{ class.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select class="form-select" id="statusFilter">
+                <option value="">所有状态</option>
+                <option value="active">进行中</option>
+                <option value="completed">已结束</option>
+                <option value="draft">草稿</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select class="form-select" id="sortOrder">
+                <option value="desc">最新优先</option>
+                <option value="asc">最早优先</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- 作业列表 -->
+    <div class="row">
+        {% for assignment in assignments %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">{{ assignment.title }}</h6>
+                    <span class="badge bg-{{ 'success' if assignment.status == 'active' else 'warning' if assignment.status == 'draft' else 'secondary' }}">
+                        {% if assignment.status == 'active' %}进行中
+                        {% elif assignment.status == 'draft' %}草稿
+                        {% else %}已结束{% endif %}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <p class="card-text small">{{ assignment.description[:100] }}{% if assignment.description|length > 100 %}...{% endif %}</p>
+                    
+                    <div class="mb-2">
+                        <small class="text-muted">
+                            <i class="fas fa-users"></i> 
+                            班级: {% if assignment.class %}{{ assignment.class.name }}{% else %}全部班级{% endif %}
+                        </small>
+                    </div>
+                    
+                    <div class="mb-2">
+                        <small class="text-muted">
+                            <i class="fas fa-calendar"></i> 
+                            发布: {{ assignment.created_at.strftime('%m-%d %H:%M') }}
+                        </small>
+                    </div>
+                    
+                    {% if assignment.due_date %}
+                    <div class="mb-2">
+                        <small class="text-{% if assignment.due_date < assignment.created_at %}danger{% else %}info{% endif %}">
+                            <i class="fas fa-clock"></i> 
+                            截止: {{ assignment.due_date.strftime('%m-%d %H:%M') }}
+                        </small>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="progress mb-2" style="height: 6px;">
+                        {% set completion_rate = (assignment.grades|selectattr('status', 'equalto', 'graded')|list|length / assignment.grades|length * 100) if assignment.grades else 0 %}
+                        <div class="progress-bar" style="width: {{ completion_rate }}%"></div>
+                    </div>
+                    <small class="text-muted">完成进度: {{ "%.1f"|format(completion_rate) }}%</small>
+                </div>
+                <div class="card-footer">
+                    <div class="btn-group w-100" role="group">
+                        <a href="{{ url_for('teacher.view_assignment', assignment_id=assignment.id) }}" 
+                           class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-eye"></i> 查看
+                        </a>
+                        <button class="btn btn-outline-secondary btn-sm" 
+                                onclick="editAssignment({{ assignment.id }})">
+                            <i class="fas fa-edit"></i> 编辑
+                        </button>
+                        <a href="{{ url_for('teacher.assignment_grades', assignment_id=assignment.id) }}" 
+                           class="btn btn-outline-warning btn-sm">
+                            <i class="fas fa-star"></i> 批改
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12">
+            <div class="text-center py-5">
+                <i class="fas fa-clipboard-list fa-5x text-muted mb-4"></i>
+                <h3 class="text-muted">暂无作业</h3>
+                <p class="text-muted">点击"布置作业"开始创建第一个作业</p>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createAssignmentModal">
+                    <i class="fas fa-plus"></i> 布置第一个作业
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- 创建作业模态框 -->
+<div class="modal fade" id="createAssignmentModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">布置新作业</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('teacher.create_assignment') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="assignmentTitle" class="form-label">作业标题 *</label>
+                        <input type="text" class="form-control" id="assignmentTitle" name="title" 
+                               placeholder="例: 肖邦练习曲Op.10 No.1练习" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="assignmentDescription" class="form-label">作业描述</label>
+                        <textarea class="form-control" id="assignmentDescription" name="description" rows="4"
+                                  placeholder="详细描述作业要求、评分标准等..."></textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="assignmentClass" class="form-label">目标班级</label>
+                                <select class="form-select" id="assignmentClass" name="class_id">
+                                    <option value="">所有班级</option>
+                                    {% for class in classes %}
+                                    <option value="{{ class.id }}">{{ class.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="assignmentType" class="form-label">作业类型</label>
+                                <select class="form-select" id="assignmentType" name="assignment_type">
+                                    <option value="practice">练习作业</option>
+                                    <option value="theory">理论作业</option>
+                                    <option value="performance">表演作业</option>
+                                    <option value="analysis">分析作业</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="dueDate" class="form-label">截止日期</label>
+                                <input type="datetime-local" class="form-control" id="dueDate" name="due_date">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="maxScore" class="form-label">满分</label>
+                                <input type="number" class="form-control" id="maxScore" name="max_score" 
+                                       value="100" min="1" max="1000">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="requirements" class="form-label">具体要求</label>
+                        <textarea class="form-control" id="requirements" name="requirements" rows="3"
+                                  placeholder="列出具体的练习要求、技巧重点等..."></textarea>
+                    </div>
+                    
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="publishNow" name="publish_now" checked>
+                        <label class="form-check-label" for="publishNow">
+                            立即发布作业
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">布置作业</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function editAssignment(assignmentId) {
+    window.location.href = '/teacher/assignment/' + assignmentId + '/edit';
+}
+
+// 设置默认截止时间为一周后
+document.addEventListener('DOMContentLoaded', function() {
+    var now = new Date();
+    now.setDate(now.getDate() + 7);
+    var isoString = now.toISOString().slice(0, 16);
+    document.getElementById('dueDate').value = isoString;
+});
+</script>
+{% endblock %} 

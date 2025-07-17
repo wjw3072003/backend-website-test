@@ -49,6 +49,20 @@ def api_login():
     
     return jsonify({'error': '邮箱或密码错误'}), 401
 
+@api.route('/auth/me', methods=['GET'])
+@jwt_required()
+def get_current_user():
+    """获取当前用户信息"""
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    
+    if not user:
+        return jsonify({'error': '用户不存在'}), 404
+    
+    return jsonify({
+        'user': user.to_dict()
+    }), 200
+
 @api.route('/auth/register', methods=['POST'])
 def api_register():
     """API注册接口"""
@@ -303,4 +317,40 @@ def get_user_stats():
         'average_score': round(avg_score, 1) if avg_score else 0,
         'recent_practices': recent_practices,
         'last_practice': None  # TODO: 添加最后练习时间
+    }), 200
+
+@api.route('/stats/overview', methods=['GET'])
+@jwt_required()
+def get_stats_overview():
+    """获取统计概览"""
+    user_id = get_jwt_identity()
+    
+    # 总练习次数
+    total_practices = PracticeRecord.query.filter_by(user_id=user_id).count()
+    
+    # 完成的练习次数
+    completed_practices = PracticeRecord.query.filter_by(
+        user_id=user_id, 
+        status='completed'
+    ).count()
+    
+    # 平均分数
+    avg_score = db.session.query(db.func.avg(PracticeRecord.score))\
+        .filter(PracticeRecord.user_id == user_id,
+                PracticeRecord.status == 'completed').scalar()
+    
+    # 本月练习次数
+    from datetime import datetime
+    current_month = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    monthly_practices = PracticeRecord.query.filter(
+        PracticeRecord.user_id == user_id,
+        PracticeRecord.created_at >= current_month
+    ).count()
+    
+    return jsonify({
+        'total_practices': total_practices,
+        'completed_practices': completed_practices,
+        'success_rate': round((completed_practices / total_practices * 100), 1) if total_practices > 0 else 0,
+        'average_score': round(avg_score, 1) if avg_score else 0,
+        'monthly_practices': monthly_practices
     }), 200

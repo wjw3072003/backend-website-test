@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI MusPal - Empowering Violin Practice with AI Feedback</title>
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/css/all.min.css" rel="stylesheet">
+    <link href="/static/css/inter-local.css" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: #1a1a1a;
+            background-color: #ffffff;
+        }
+        
+        /* Navigation */
+        .navbar-custom {
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 1rem 0;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+        
+        .navbar-custom .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: #1a1a1a;
+        }
+        
+        .navbar-custom .nav-link {
+            color: #1a1a1a;
+            font-weight: 500;
+            margin: 0 1rem;
+            transition: color 0.3s ease;
+        }
+        
+        .navbar-custom .nav-link:hover {
+            color: #6366f1;
+        }
+        
+        .btn-primary-custom {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem 1.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
+        }
+        
+        .btn-outline-custom {
+            border: 2px solid #1a1a1a;
+            color: #1a1a1a;
+            border-radius: 8px;
+            padding: 0.5rem 1.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            background: transparent;
+        }
+        
+        .btn-outline-custom:hover {
+            background: #1a1a1a;
+            color: #ffffff;
+        }
+        
+        /* Hero Section */
+        .hero-section {
+            padding: 120px 0 80px;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('/static/images/hero-bg.svg');
+            background-size: cover;
+            opacity: 0.5;
+        }
+        
+        .hero-title {
+            font-size: 4rem;
+            font-weight: 800;
+            line-height: 1.1;
+            color: #1a1a1a;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: #64748b;
+            margin-bottom: 3rem;
+            font-weight: 400;
+            position: relative;
+        }
+        
+        .hero-cta {
+            margin-bottom: 4rem;
+            position: relative;
+        }
+        
+        .btn-hero {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            border: none;
+            border-radius: 12px;
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+        }
+        
+        .btn-hero:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(99, 102, 241, 0.4);
+        }
+        
+        /* Features Section */
+        .features-section {
+            padding: 80px 0;
+            background: #ffffff;
+        }
+        
+        .section-title {
+            font-size: 3rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 4rem;
+            color: #1a1a1a;
+        }
+        
+        .feature-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 2rem;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border-color: #6366f1;
+        }
+        
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .feature-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #1a1a1a;
+        }
+        
+        .feature-description {
+            color: #64748b;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+        
+        /* Pricing Section */
+        .pricing-section {
+            padding: 80px 0;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        }
+        
+        .pricing-card {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 2.5rem;
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s ease;
+            position: relative;
+            height: 100%;
+        }
+        
+        .pricing-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.1);
+        }
+        
+        .pricing-card.featured {
+            border-color: #6366f1;
+            transform: scale(1.05);
+        }
+        
+        .pricing-card.featured::before {
+            content: '最受欢迎';
+            position: absolute;
+            top: -1px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 0 0 8px 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        
+        .pricing-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #1a1a1a;
+        }
+        
+        .pricing-price {
+            font-size: 3rem;
+            font-weight: 800;
+            color: #1a1a1a;
+            margin-bottom: 0.5rem;
+        }
+        
+        .pricing-price .currency {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #64748b;
+        }
+        
+        .pricing-period {
+            color: #64748b;
+            margin-bottom: 2rem;
+        }
+        
+        .pricing-features {
+            list-style: none;
+            margin-bottom: 2rem;
+        }
+        
+        .pricing-features li {
+            padding: 0.5rem 0;
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        .pricing-features li::before {
+            content: '✓';
+            color: #10b981;
+            font-weight: bold;
+            margin-right: 0.75rem;
+            margin-top: 0.125rem;
+        }
+        
+        .pricing-btn {
+            width: 100%;
+            padding: 1rem;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .pricing-btn.primary {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            border: none;
+            color: white;
+        }
+        
+        .pricing-btn.outline {
+            background: transparent;
+            border: 2px solid #6366f1;
+            color: #6366f1;
+        }
+        
+        /* Testimonials Section */
+        .testimonials-section {
+            padding: 80px 0;
+            background: #ffffff;
+        }
+        
+        .testimonial-stat {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+        
+        .stat-number {
+            font-size: 4rem;
+            font-weight: 800;
+            color: #6366f1;
+            display: block;
+        }
+        
+        .stat-text {
+            font-size: 1.25rem;
+            color: #64748b;
+            font-weight: 500;
+        }
+        
+        .testimonial-card {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 2.5rem;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            height: 100%;
+        }
+        
+        .testimonial-text {
+            font-size: 1.1rem;
+            line-height: 1.7;
+            color: #374151;
+            margin-bottom: 2rem;
+        }
+        
+        .testimonial-author {
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 0.5rem;
+        }
+        
+        .testimonial-title {
+            color: #64748b;
+            font-size: 0.95rem;
+        }
+        
+        /* Footer */
+        .footer {
+            background: #1a1a1a;
+            color: #ffffff;
+            padding: 3rem 0 2rem;
+        }
+        
+        .footer-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .footer-section h5 {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #ffffff;
+        }
+        
+        .footer-section a {
+            color: #94a3b8;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 0.5rem;
+            transition: color 0.3s ease;
+        }
+        
+        .footer-section a:hover {
+            color: #ffffff;
+        }
+        
+        .footer-bottom {
+            border-top: 1px solid #374151;
+            padding-top: 2rem;
+            text-align: center;
+            color: #94a3b8;
+        }
+        
+        .newsletter-form {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .newsletter-input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid #374151;
+            border-radius: 8px;
+            background: #374151;
+            color: #ffffff;
+        }
+        
+        .newsletter-input::placeholder {
+            color: #94a3b8;
+        }
+        
+        .newsletter-btn {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .newsletter-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        /* Language Toggle */
+        .lang-toggle {
+            background: transparent;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 0.375rem 0.75rem;
+            color: #64748b;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .lang-toggle:hover {
+            border-color: #6366f1;
+            color: #6366f1;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            
+            .section-title {
+                font-size: 2rem;
+            }
+            
+            .pricing-card.featured {
+                transform: none;
+            }
+            
+            .footer-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+            
+            .newsletter-form {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <img src="/static/images/logo.svg" alt="AI MusPal" height="40" class="d-inline-block align-text-top me-2">
+                AI MusPal
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#features">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#pricing">Pricing</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#testimonials">Testimonials</a>
+                    </li>
+                </ul>
+                
+                <div class="d-flex align-items-center gap-3">
+                    <button class="lang-toggle">繁 / ENG</button>
+                    <button class="btn btn-outline-custom">Sign In</button>
+                    <button class="btn btn-primary-custom">Start Free Trial</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8 mx-auto text-center">
+                    <div class="d-flex align-items-center justify-content-center mb-4">
+                        <img src="/static/images/violin-icon.svg" alt="Violin" class="me-3" style="width: 80px; height: 80px;">
+                        <h1 class="hero-title mb-0">
+                            Empowering <br>
+                            Violin Practice with <br>
+                            AI Feedback
+                        </h1>
+                    </div>
+                    <p class="hero-subtitle">
+                        Personalized guidance on intonation, posture, rhythm, and dynamics to elevate your practice.
+                    </p>
+                    <div class="hero-cta">
+                        <button class="btn btn-hero">Start Free Trial</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Virtual Mentor Section -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 mx-auto text-center">
+                    <h2 class="section-title">Your Virtual Violin Mentor, Anytime, Anywhere.</h2>
+                    <p class="lead mb-4">
+                        AI MusPal revolutionizes violin practice by providing real-time feedback on intonation, rhythm, and posture. 
+                        It's like having a dedicated mentor available 24/7 to guide your progress, bridging the gaps in traditional lessons.
+                    </p>
+                    <button class="btn btn-hero">Start Free Trial</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features-section">
+        <div class="container">
+            <h2 class="section-title">Why Choose AI MusPal?</h2>
+            <div class="row g-4">
+                <div class="col-lg-3 col-md-6">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-microphone text-white fa-lg"></i>
+                        </div>
+                        <h3 class="feature-title">Real-time Feedback</h3>
+                        <p class="feature-description">
+                            With specific and detail feedback separate us with another music app.
+                        </p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-gamepad text-white fa-lg"></i>
+                        </div>
+                        <h3 class="feature-title">Gamified Learning</h3>
+                        <p class="feature-description">
+                            Earn badges, climb leaderboards, and stay motivated to practice.
+                        </p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-user-cog text-white fa-lg"></i>
+                        </div>
+                        <h3 class="feature-title">Personalized Practice Plans</h3>
+                        <p class="feature-description">
+                            Adaptive learning tailored to your progress and goals.
+                        </p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-clock text-white fa-lg"></i>
+                        </div>
+                        <h3 class="feature-title">Unlimited Accessibility</h3>
+                        <p class="feature-description">
+                            Practice anytime, anywhere, with an affordable subscription.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="pricing-section">
+        <div class="container">
+            <h2 class="section-title">Pricing</h2>
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <div class="pricing-card">
+                        <h3 class="pricing-title">Free Membership</h3>
+                        <div class="pricing-price">
+                            <span class="currency">HK$</span>0
+                        </div>
+                        <p class="pricing-period">Start for Free</p>
+                        <ul class="pricing-features">
+                            <li>5 messages per day</li>
+                            <li>Max. 500 words per message</li>
+                            <li>Up to 15 minutes of AI audio scoring per month</li>
+                            <li>5 music analysis reports per month</li>
+                            <li>Lifetime free</li>
+                        </ul>
+                        <button class="btn pricing-btn outline">Start for Free</button>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="pricing-card featured">
+                        <h3 class="pricing-title">Gold Membership</h3>
+                        <div class="pricing-price">
+                            <span class="currency">HK$</span>238.5
+                        </div>
+                        <p class="pricing-period">p/month</p>
+                        <ul class="pricing-features">
+                            <li>5 messages per month</li>
+                            <li>Max. 1,000 words per message</li>
+                            <li>Up to 4 hours of AI audio scoring per month</li>
+                            <li>300 music analysis reports per month</li>
+                            <li>In addition to <strong>only $60 per hour per month</strong></li>
+                        </ul>
+                        <button class="btn pricing-btn primary">Start Free Trial</button>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="pricing-card">
+                        <h3 class="pricing-title">Platinum Membership</h3>
+                        <div class="pricing-price">
+                            <span style="text-decoration: line-through; color: #94a3b8; font-size: 2rem;">HK$477</span>
+                            <br>
+                            <span class="currency">HK$</span>273
+                        </div>
+                        <p class="pricing-period">p/month</p>
+                        <ul class="pricing-features">
+                            <li>Unlimited messages per month</li>
+                            <li>Max. 2,000 words per message</li>
+                            <li>Up to 10 hours of AI audio scoring per month</li>
+                            <li>3,000 music analysis reports per month</li>
+                            <li>In addition to <strong>only $27 per hour per month</strong></li>
+                        </ul>
+                        <button class="btn pricing-btn primary">Start Free Trial</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section id="testimonials" class="testimonials-section">
+        <div class="container">
+            <div class="testimonial-stat">
+                <span class="stat-number">95%</span>
+                <p class="stat-text">of users improved practice efficiency within the first month!</p>
+            </div>
+            
+            <h2 class="section-title">Trusted by Students and Teachers</h2>
+            
+            <div class="row g-4">
+                <div class="col-lg-6">
+                    <div class="testimonial-card">
+                        <p class="testimonial-text">
+                            Having an always stand-by AI assistant to closely monitor the quality of the students' practice is a dream come true for both students and teachers. Teachers can give more efficient lessons, and students can progress faster, thanks to enhanced practice quality provided by AIMusPal.
+                        </p>
+                        <div class="testimonial-author">Albert Cheng</div>
+                        <div class="testimonial-title">Master of music, the Juilliard School</div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="testimonial-card">
+                        <p class="testimonial-text">
+                            There is always so much talent in students. However, they tend to not be able to spot their mistakes and think from their teacher's perspective because instrument playing is a very challenging multi-task. I believe this AI app can potentially lead students to the right path and respond to different student's needs at the spot and hence, creating an efficient and disciplined practice session. Let the AI apps accompany you for a magical music journey!
+                        </p>
+                        <div class="testimonial-author">Akane Kubota</div>
+                        <div class="testimonial-title">Master of music, New York University<br>Steinway Honorary Teacher</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <h2 class="footer-title">Your Virtual Violin Mentor, Anytime, Anywhere.</h2>
+            
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h5>Product</h5>
+                    <a href="#">How It Works</a>
+                    <a href="#">Features</a>
+                    <a href="#">Pricing</a>
+                    <a href="#">Testimonials</a>
+                </div>
+                <div class="footer-section">
+                    <h5>Support</h5>
+                    <a href="#">Terms of service</a>
+                    <a href="#">Privacy policy</a>
+                </div>
+                <div class="footer-section">
+                    <h5>Stay up to date</h5>
+                    <div class="newsletter-form">
+                        <input type="email" class="newsletter-input" placeholder="Email">
+                        <button class="newsletter-btn">Submit</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>Email: support@aimuspal.com</p>
+                <p>Copyright © AI MusPal Limited. All rights reserved</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/static/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Navbar scroll effect
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('.navbar-custom');
+            if (window.scrollY > 50) {
+                navbar.style.background = 'rgba(255, 255, 255, 0.98)';
+                navbar.style.borderBottom = '1px solid rgba(0, 0, 0, 0.15)';
+            } else {
+                navbar.style.background = 'rgba(255, 255, 255, 0.95)';
+                navbar.style.borderBottom = '1px solid rgba(0, 0, 0, 0.1)';
+            }
+        });
+
+        // Add animation on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // Observe elements for animation
+        document.querySelectorAll('.feature-card, .pricing-card, .testimonial-card').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(30px)';
+            el.style.transition = 'all 0.6s ease';
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html> 

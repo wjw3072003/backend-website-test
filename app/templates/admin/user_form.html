@@ -1,0 +1,301 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if user %}编辑用户{% else %}添加用户{% endif %} - 管理后台 - AiMusPal
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <!-- 侧边栏 -->
+        <div class="col-md-3 col-lg-2 px-0">
+            <div class="bg-light sidebar py-3">
+                <div class="list-group list-group-flush">
+                    <a href="{{ url_for('admin.dashboard') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-tachometer-alt me-2"></i>仪表板
+                    </a>
+                    <a href="{{ url_for('admin.users') }}" class="list-group-item list-group-item-action active">
+                        <i class="fas fa-users me-2"></i>用户管理
+                    </a>
+                    <a href="{{ url_for('admin.practices') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-music me-2"></i>练习管理
+                    </a>
+                    <a href="{{ url_for('admin.practice_records') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-history me-2"></i>练习记录
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 主内容区 -->
+        <div class="col-md-9 col-lg-10">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">
+                    <i class="fas fa-user text-primary"></i>
+                    {% if user %}编辑用户{% else %}添加用户{% endif %}
+                </h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ url_for('admin.users') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> 返回用户列表
+                    </a>
+                </div>
+            </div>
+
+            <!-- 用户表单 -->
+            <div class="card shadow">
+                <div class="card-body">
+                    <form id="user-form" method="POST">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <!-- 基本信息 -->
+                                <div class="card mb-4">
+                                    <div class="card-header">
+                                        <h5 class="mb-0">基本信息</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="username" class="form-label">用户名 <span class="text-danger">*</span></label>
+                                                    <input type="text" class="form-control" id="username" name="username" 
+                                                           value="{{ user.username if user else '' }}" required>
+                                                    <div class="form-text">用于登录的唯一标识</div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="email" class="form-label">邮箱 <span class="text-danger">*</span></label>
+                                                    <input type="email" class="form-control" id="email" name="email" 
+                                                           value="{{ user.email if user else '' }}" required>
+                                                    <div class="form-text">用户的邮箱地址</div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="first_name" class="form-label">名</label>
+                                                    <input type="text" class="form-control" id="first_name" name="first_name" 
+                                                           value="{{ user.first_name if user else '' }}" placeholder="例：张">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="last_name" class="form-label">姓</label>
+                                                    <input type="text" class="form-control" id="last_name" name="last_name" 
+                                                           value="{{ user.last_name if user else '' }}" placeholder="例：三">
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="phone" class="form-label">电话号码</label>
+                                            <input type="tel" class="form-control" id="phone" name="phone" 
+                                                   value="{{ user.phone if user else '' }}" placeholder="手机号码">
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="password" class="form-label">
+                                                密码 
+                                                {% if not user %}<span class="text-danger">*</span>{% endif %}
+                                            </label>
+                                            <input type="password" class="form-control" id="password" name="password" 
+                                                   {% if not user %}required{% endif %}>
+                                            <div class="form-text">
+                                                {% if user %}留空则不修改密码{% else %}用户登录密码{% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 角色分配 -->
+                                <div class="card mb-4">
+                                    <div class="card-header">
+                                        <h5 class="mb-0">角色分配</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="form-text mb-3">选择用户的角色权限</div>
+                                        {% for role in roles %}
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input" type="checkbox" name="roles" 
+                                                   value="{{ role.id }}" id="role_{{ role.id }}"
+                                                   {% if user and role in user.roles %}checked{% endif %}>
+                                            <label class="form-check-label" for="role_{{ role.id }}">
+                                                <strong>{{ role.name.title() }}</strong>
+                                                {% if role.description %}
+                                                    <span class="text-muted">- {{ role.description }}</span>
+                                                {% endif %}
+                                            </label>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <!-- 账户状态 -->
+                                <div class="card mb-4">
+                                    <div class="card-header">
+                                        <h5 class="mb-0">账户状态</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="form-check form-switch mb-3">
+                                            <input class="form-check-input" type="checkbox" name="is_active" 
+                                                   id="is_active" {% if not user or user.is_active %}checked{% endif %}>
+                                            <label class="form-check-label" for="is_active">
+                                                账户激活
+                                            </label>
+                                            <div class="form-text">禁用后用户无法登录</div>
+                                        </div>
+
+                                        <div class="form-check form-switch mb-3">
+                                            <input class="form-check-input" type="checkbox" name="is_verified" 
+                                                   id="is_verified" {% if user and user.is_verified %}checked{% endif %}>
+                                            <label class="form-check-label" for="is_verified">
+                                                邮箱验证
+                                            </label>
+                                            <div class="form-text">标记用户邮箱为已验证</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 操作提示 -->
+                                <div class="card mb-4">
+                                    <div class="card-header">
+                                        <h6 class="mb-0">
+                                            <i class="fas fa-info-circle"></i> 操作提示
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <ul class="mb-0 small">
+                                            <li>用户名和邮箱必须唯一</li>
+                                            <li>{% if user %}编辑时密码留空则不修改{% else %}密码至少6个字符{% endif %}</li>
+                                            <li>用户角色决定访问权限</li>
+                                            <li>禁用用户会阻止其登录</li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                {% if user %}
+                                <!-- 用户信息 -->
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6 class="mb-0">
+                                            <i class="fas fa-clock"></i> 用户信息
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="small mb-1"><strong>用户ID:</strong> {{ user.id }}</p>
+                                        <p class="small mb-1"><strong>注册时间:</strong> 
+                                            {{ user.created_at.strftime('%Y-%m-%d %H:%M') if user.created_at }}
+                                        </p>
+                                        <p class="small mb-1"><strong>最后登录:</strong> 
+                                            {{ user.last_login.strftime('%Y-%m-%d %H:%M') if user.last_login else '从未登录' }}
+                                        </p>
+                                        <p class="small mb-0"><strong>最后更新:</strong> 
+                                            {{ user.updated_at.strftime('%Y-%m-%d %H:%M') if user.updated_at }}
+                                        </p>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- 提交按钮 -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <hr>
+                                <div class="d-flex justify-content-between">
+                                    <a href="{{ url_for('admin.users') }}" class="btn btn-secondary">
+                                        <i class="fas fa-times"></i> 取消
+                                    </a>
+                                    <div>
+                                        {% if user %}
+                                        <a href="{{ url_for('admin.user_detail', user_id=user.id) }}" 
+                                           class="btn btn-outline-info me-2">
+                                            <i class="fas fa-eye"></i> 查看详情
+                                        </a>
+                                        {% endif %}
+                                        <button type="submit" class="btn btn-primary" id="submit-btn">
+                                            <i class="fas fa-save"></i> 
+                                            {% if user %}更新用户{% else %}创建用户{% endif %}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.sidebar {
+    position: fixed;
+    top: 56px;
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    padding: 0;
+    box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+}
+
+.sidebar .list-group-item {
+    border-radius: 0;
+    border: none;
+    border-bottom: 1px solid rgba(0, 0, 0, .125);
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // 表单验证
+    $('#user-form').on('submit', function(e) {
+        const username = $('#username').val().trim();
+        const email = $('#email').val().trim();
+        const password = $('#password').val().trim();
+        
+        if (!username || !email) {
+            e.preventDefault();
+            alert('用户名和邮箱都是必填项');
+            return false;
+        }
+        
+        {% if not user %}
+        if (!password) {
+            e.preventDefault();
+            alert('密码是必填项');
+            return false;
+        }
+        
+        if (password.length < 6) {
+            e.preventDefault();
+            alert('密码至少需要6个字符');
+            return false;
+        }
+        {% endif %}
+        
+        // 邮箱格式验证
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            e.preventDefault();
+            alert('请输入有效的邮箱地址');
+            return false;
+        }
+        
+        // 禁用提交按钮防止重复提交
+        $('#submit-btn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> 保存中...');
+    });
+
+    // 表单输入时启用提交按钮
+    $('#user-form input, #user-form select').on('input change', function() {
+        $('#submit-btn').prop('disabled', false).html('<i class="fas fa-save"></i> {% if user %}更新用户{% else %}创建用户{% endif %}');
+    });
+});
+</script>
+{% endblock %} 

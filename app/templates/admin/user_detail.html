@@ -28,33 +28,260 @@
         <!-- 主内容区 -->
         <div class="col-md-9 col-lg-10">
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <h1 class="h2">用户详情</h1>
-                <a href="{{ url_for('admin.users') }}" class="btn btn-secondary">返回用户列表</a>
+                <h1 class="h2">
+                    <i class="fas fa-user text-primary"></i> 
+                    {{ user.username }} 的详情
+                </h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-group me-2">
+                        <a href="{{ url_for('admin.edit_user', user_id=user.id) }}" class="btn btn-outline-warning">
+                            <i class="fas fa-edit"></i> 编辑用户
+                        </a>
+                        <form method="POST" action="{{ url_for('admin.toggle_user_status', user_id=user.id) }}" 
+                              style="display: inline;">
+                            <button type="submit" class="btn btn-outline-{% if user.is_active %}danger{% else %}success{% endif %}">
+                                <i class="fas fa-{% if user.is_active %}pause{% else %}play{% endif %}"></i> 
+                                {% if user.is_active %}禁用用户{% else %}激活用户{% endif %}
+                            </button>
+                        </form>
+                    </div>
+                    <a href="{{ url_for('admin.users') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> 返回列表
+                    </a>
+                </div>
             </div>
 
             <!-- 用户详情 -->
-            <div class="card shadow">
-                <div class="card-body">
-                    <h5>基本信息</h5>
-                    <p><strong>用户名:</strong> {{ user.username or '-' }}</p>
-                    <p><strong>邮箱:</strong> {{ user.email or '-' }}</p>
-                    <p><strong>姓名:</strong> {{ user.first_name or '-' }} {{ user.last_name or '-' }}</p>
-                    <p><strong>状态:</strong> 
-                        {% if user.is_active %}
-                            <span class="badge bg-success">活跃</span>
-                        {% else %}
-                            <span class="badge bg-danger">禁用</span>
-                        {% endif %}
-                    </p>
-                    <p><strong>验证状态:</strong>
-                        {% if user.is_verified %}
-                            <span class="badge bg-success">已验证</span>
-                        {% else %}
-                            <span class="badge bg-warning">未验证</span>
-                        {% endif %}
-                    </p>
-                    <p><strong>注册时间:</strong> {{ user.created_at.strftime('%Y-%m-%d %H:%M') if user.created_at else '-' }}</p>
-                    <p><strong>最后登录:</strong> {{ user.last_login.strftime('%Y-%m-%d %H:%M') if user.last_login else '从未登录' }}</p>
+            <div class="row">
+                <div class="col-md-8">
+                    <!-- 基本信息 -->
+                    <div class="card shadow mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-info-circle text-primary"></i> 基本信息
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <td width="30%"><strong>用户ID:</strong></td>
+                                            <td>{{ user.id }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>用户名:</strong></td>
+                                            <td>{{ user.username }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>邮箱:</strong></td>
+                                            <td>{{ user.email }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>姓名:</strong></td>
+                                            <td>{{ user.first_name or '' }} {{ user.last_name or '' }} 
+                                                {% if not user.first_name and not user.last_name %}<span class="text-muted">未填写</span>{% endif %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>电话:</strong></td>
+                                            <td>{{ user.phone or '<span class="text-muted">未填写</span>' | safe }}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div class="col-md-6">
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <td width="30%"><strong>账户状态:</strong></td>
+                                            <td>
+                                                {% if user.is_active %}
+                                                    <span class="badge bg-success">激活</span>
+                                                {% else %}
+                                                    <span class="badge bg-danger">禁用</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>验证状态:</strong></td>
+                                            <td>
+                                                {% if user.is_verified %}
+                                                    <span class="badge bg-success">已验证</span>
+                                                {% else %}
+                                                    <span class="badge bg-warning">未验证</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>用户角色:</strong></td>
+                                            <td>
+                                                {% if user.roles %}
+                                                    {% for role in user.roles %}
+                                                        <span class="badge bg-primary me-1">{{ role.description or role.name.title() }}</span>
+                                                    {% endfor %}
+                                                {% else %}
+                                                    <span class="text-muted">无角色</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>注册时间:</strong></td>
+                                            <td>{{ user.created_at.strftime('%Y-%m-%d %H:%M') if user.created_at else '-' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>最后登录:</strong></td>
+                                            <td>{{ user.last_login.strftime('%Y-%m-%d %H:%M') if user.last_login else '从未登录' }}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 练习记录 -->
+                    <div class="card shadow mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-history text-info"></i> 最近练习记录
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% if practice_records %}
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>练习曲目</th>
+                                                <th>分数</th>
+                                                <th>状态</th>
+                                                <th>练习时间</th>
+                                                <th>操作</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for record in practice_records %}
+                                            <tr>
+                                                <td>{{ record.practice.title if record.practice else '-' }}</td>
+                                                <td>
+                                                    {% if record.score %}
+                                                        <span class="badge bg-primary">{{ record.score }}</span>
+                                                    {% else %}
+                                                        -
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if record.status == 'completed' %}
+                                                        <span class="badge bg-success">已完成</span>
+                                                    {% elif record.status == 'analyzing' %}
+                                                        <span class="badge bg-warning">分析中</span>
+                                                    {% elif record.status == 'failed' %}
+                                                        <span class="badge bg-danger">失败</span>
+                                                    {% else %}
+                                                        <span class="badge bg-secondary">{{ record.status }}</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ record.created_at.strftime('%Y-%m-%d %H:%M') if record.created_at else '-' }}</td>
+                                                <td>
+                                                    <a href="{{ url_for('admin.practice_record_detail', record_id=record.id) }}" 
+                                                       class="btn btn-sm btn-outline-primary">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="text-center mt-3">
+                                    <a href="{{ url_for('admin.practice_records') }}?user_search={{ user.username }}" 
+                                       class="btn btn-outline-info">
+                                        查看所有练习记录 <i class="fas fa-arrow-right"></i>
+                                    </a>
+                                </div>
+                            {% else %}
+                                <div class="text-center text-muted py-4">
+                                    <i class="fas fa-music fa-2x mb-2"></i>
+                                    <p>该用户还没有练习记录</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <!-- 用户统计 -->
+                    <div class="card shadow mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-chart-bar text-success"></i> 练习统计
+                            </h5>
+                        </div>
+                        <div class="card-body text-center">
+                            <div class="row">
+                                <div class="col-6">
+                                    <h4 class="text-primary">{{ user.total_practices or 0 }}</h4>
+                                    <small class="text-muted">总练习次数</small>
+                                </div>
+                                <div class="col-6">
+                                    <h4 class="text-success">{{ user.best_score or 0 }}</h4>
+                                    <small class="text-muted">最高分数</small>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-12">
+                                    <h4 class="text-info">{{ user.average_score or 0 }}</h4>
+                                    <small class="text-muted">平均分数</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 快速操作 -->
+                    <div class="card shadow mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-cogs text-warning"></i> 快速操作
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <a href="{{ url_for('admin.edit_user', user_id=user.id) }}" 
+                                   class="btn btn-outline-warning btn-sm">
+                                    <i class="fas fa-edit"></i> 编辑用户信息
+                                </a>
+                                <form method="POST" action="{{ url_for('admin.toggle_user_status', user_id=user.id) }}">
+                                    <button type="submit" class="btn btn-outline-{% if user.is_active %}danger{% else %}success{% endif %} btn-sm w-100">
+                                        <i class="fas fa-{% if user.is_active %}pause{% else %}play{% endif %}"></i> 
+                                        {% if user.is_active %}禁用账户{% else %}激活账户{% endif %}
+                                    </button>
+                                </form>
+                                <a href="{{ url_for('admin.practice_records') }}?user_search={{ user.username }}" 
+                                   class="btn btn-outline-info btn-sm">
+                                    <i class="fas fa-history"></i> 查看练习记录
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 账户信息 -->
+                    <div class="card shadow">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-info-circle text-secondary"></i> 系统信息
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <p class="small mb-1"><strong>创建时间:</strong><br>
+                                {{ user.created_at.strftime('%Y-%m-%d %H:%M:%S') if user.created_at else '-' }}
+                            </p>
+                            <p class="small mb-1"><strong>最后更新:</strong><br>
+                                {{ user.updated_at.strftime('%Y-%m-%d %H:%M:%S') if user.updated_at else '-' }}
+                            </p>
+                            <p class="small mb-0"><strong>密码重置:</strong><br>
+                                <span class="text-muted">管理员可在编辑页面重置</span>
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

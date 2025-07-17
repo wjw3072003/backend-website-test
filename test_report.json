@@ -1,0 +1,98 @@
+{
+  "timestamp": "2025-07-16T17:19:22.927956",
+  "total_tests": 15,
+  "passed_tests": 15,
+  "failed_tests": 0,
+  "results": [
+    {
+      "test": "主页访问",
+      "success": true,
+      "message": "状态码: 200",
+      "timestamp": "2025-07-16T17:19:22.637559"
+    },
+    {
+      "test": "登录页面",
+      "success": true,
+      "message": "状态码: 200",
+      "timestamp": "2025-07-16T17:19:22.639394"
+    },
+    {
+      "test": "学生登录",
+      "success": true,
+      "message": "登录成功，能访问仪表板",
+      "timestamp": "2025-07-16T17:19:22.763191"
+    },
+    {
+      "test": "仪表板访问",
+      "success": true,
+      "message": "状态码: 200",
+      "timestamp": "2025-07-16T17:19:22.767903"
+    },
+    {
+      "test": "练习曲目列表",
+      "success": true,
+      "message": "状态码: 200",
+      "timestamp": "2025-07-16T17:19:22.789185"
+    },
+    {
+      "test": "练习曲目搜索",
+      "success": true,
+      "message": "搜索功能正常，状态码: 200",
+      "timestamp": "2025-07-16T17:19:22.794895"
+    },
+    {
+      "test": "练习曲目筛选",
+      "success": true,
+      "message": "筛选功能正常，状态码: 200",
+      "timestamp": "2025-07-16T17:19:22.803358"
+    },
+    {
+      "test": "练习记录页面",
+      "success": true,
+      "message": "状态码: 200",
+      "timestamp": "2025-07-16T17:19:22.814138"
+    },
+    {
+      "test": "学习统计页面",
+      "success": true,
+      "message": "状态码: 200",
+      "timestamp": "2025-07-16T17:19:22.854972"
+    },
+    {
+      "test": "个人资料页面",
+      "success": true,
+      "message": "状态码: 200",
+      "timestamp": "2025-07-16T17:19:22.859822"
+    },
+    {
+      "test": "用户信息API",
+      "success": true,
+      "message": "状态码: 401",
+      "timestamp": "2025-07-16T17:19:22.861963"
+    },
+    {
+      "test": "练习列表API",
+      "success": true,
+      "message": "状态码: 401",
+      "timestamp": "2025-07-16T17:19:22.864710"
+    },
+    {
+      "test": "统计概览API",
+      "success": true,
+      "message": "状态码: 401",
+      "timestamp": "2025-07-16T17:19:22.868364"
+    },
+    {
+      "test": "缓存功能",
+      "success": true,
+      "message": "首次: 0.017s, 二次: 0.016s",
+      "timestamp": "2025-07-16T17:19:22.900653"
+    },
+    {
+      "test": "响应式设计",
+      "success": true,
+      "message": "页面包含响应式CSS类",
+      "timestamp": "2025-07-16T17:19:22.927878"
+    }
+  ]
+}

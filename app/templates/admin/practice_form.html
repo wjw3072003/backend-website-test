@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if practice %}编辑练习曲目{% else %}添加练习曲目{% endif %} - 管理后台 - AiMusPal
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- 返回按钮 -->
+    <div class="mb-3">
+        <a href="{{ url_for('admin.practices') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> 返回练习曲目列表
+        </a>
+    </div>
+
+    <!-- 表单标题 -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="mb-0">
+                <i class="fas fa-music text-primary"></i> 
+                {% if practice %}编辑练习曲目{% else %}添加练习曲目{% endif %}
+            </h3>
+        </div>
+        <div class="card-body">
+            <form id="practice-form" method="POST">
+                <div class="row">
+                    <div class="col-md-8">
+                        <!-- 基本信息 -->
+                        <div class="mb-3">
+                            <label for="title" class="form-label">曲目标题 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="title" name="title" 
+                                   value="{{ practice.title if practice else '' }}" required>
+                            <div class="form-text">请输入练习曲目的标题</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="composer" class="form-label">作曲家</label>
+                            <input type="text" class="form-control" id="composer" name="composer" 
+                                   value="{{ practice.composer if practice else '' }}" placeholder="例：巴赫、贝多芬">
+                            <div class="form-text">作曲家姓名（可选）</div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="difficulty_level" class="form-label">难度等级 <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="difficulty_level" name="difficulty_level" required>
+                                        {% for i in range(1, 11) %}
+                                            <option value="{{ i }}" 
+                                                {% if practice and practice.difficulty_level == i %}selected{% endif %}>
+                                                {{ i }} 级
+                                                {% if i <= 3 %}(初级)
+                                                {% elif i <= 7 %}(中级)
+                                                {% else %}(高级)
+                                                {% endif %}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="form-text">1-3级：初级，4-7级：中级，8-10级：高级</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="genre" class="form-label">音乐风格</label>
+                                    <select class="form-select" id="genre" name="genre">
+                                        <option value="">选择风格（可选）</option>
+                                        <option value="古典" {% if practice and practice.genre == '古典' %}selected{% endif %}>古典</option>
+                                        <option value="爵士" {% if practice and practice.genre == '爵士' %}selected{% endif %}>爵士</option>
+                                        <option value="流行" {% if practice and practice.genre == '流行' %}selected{% endif %}>流行</option>
+                                        <option value="民族" {% if practice and practice.genre == '民族' %}selected{% endif %}>民族</option>
+                                        <option value="蓝调" {% if practice and practice.genre == '蓝调' %}selected{% endif %}>蓝调</option>
+                                        <option value="摇滚" {% if practice and practice.genre == '摇滚' %}selected{% endif %}>摇滚</option>
+                                        <option value="电子" {% if practice and practice.genre == '电子' %}selected{% endif %}>电子</option>
+                                        <option value="其他" {% if practice and practice.genre == '其他' %}selected{% endif %}>其他</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">曲目描述</label>
+                            <textarea class="form-control" id="description" name="description" rows="4" 
+                                      placeholder="请输入曲目的描述、练习要点或演奏技巧建议...">{{ practice.description if practice else '' }}</textarea>
+                            <div class="form-text">详细描述曲目特点、练习重点等信息</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <!-- 预览信息 -->
+                        <div class="card bg-light">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-eye"></i> 预览
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="preview-content">
+                                    <h6 id="preview-title">曲目标题</h6>
+                                    <p class="mb-1"><strong>作曲家:</strong> <span id="preview-composer">未填写</span></p>
+                                    <p class="mb-1"><strong>难度:</strong> 
+                                        <span id="preview-difficulty">
+                                            <i class="fas fa-star text-warning"></i> 1级 (初级)
+                                        </span>
+                                    </p>
+                                    <p class="mb-1"><strong>风格:</strong> <span id="preview-genre">未选择</span></p>
+                                    <hr>
+                                    <p class="mb-0"><strong>描述:</strong></p>
+                                    <p id="preview-description" class="text-muted small">暂无描述</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 操作提示 -->
+                        <div class="card mt-3">
+                            <div class="card-header">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-info-circle"></i> 提示
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <ul class="mb-0 small">
+                                    <li>曲目标题和难度等级为必填项</li>
+                                    <li>描述中可以包含练习要点和技巧建议</li>
+                                    <li>保存后曲目将显示在学生的练习列表中</li>
+                                    <li>可以随时编辑已创建的曲目信息</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 提交按钮 -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <hr>
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('admin.practices') }}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> 取消
+                            </a>
+                            <div>
+                                <button type="submit" class="btn btn-primary" id="submit-btn">
+                                    <i class="fas fa-save"></i> 
+                                    {% if practice %}更新练习曲目{% else %}创建练习曲目{% endif %}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // 实时预览功能
+    function updatePreview() {
+        const title = $('#title').val() || '曲目标题';
+        const composer = $('#composer').val() || '未填写';
+        const difficulty = $('#difficulty_level').val() || 1;
+        const genre = $('#genre').val() || '未选择';
+        const description = $('#description').val() || '暂无描述';
+
+        $('#preview-title').text(title);
+        $('#preview-composer').text(composer);
+        $('#preview-genre').text(genre);
+        $('#preview-description').text(description);
+
+        // 更新难度显示
+        let difficultyText = '';
+        let stars = '';
+        for(let i = 1; i <= difficulty; i++) {
+            stars += '<i class="fas fa-star text-warning"></i> ';
+        }
+        
+        let level = '';
+        if(difficulty <= 3) level = '(初级)';
+        else if(difficulty <= 7) level = '(中级)';
+        else level = '(高级)';
+        
+        difficultyText = stars + difficulty + '级 ' + level;
+        $('#preview-difficulty').html(difficultyText);
+    }
+
+    // 绑定输入事件
+    $('#title, #composer, #genre, #description').on('input', updatePreview);
+    $('#difficulty_level').on('change', updatePreview);
+
+    // 初始化预览
+    updatePreview();
+
+    // 表单验证
+    $('#practice-form').on('submit', function(e) {
+        const title = $('#title').val().trim();
+        
+        if(!title) {
+            e.preventDefault();
+            alert('请输入曲目标题');
+            $('#title').focus();
+            return false;
+        }
+
+        // 禁用提交按钮防止重复提交
+        $('#submit-btn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> 保存中...');
+    });
+
+    // 表单输入时启用提交按钮
+    $('#practice-form input, #practice-form select, #practice-form textarea').on('input change', function() {
+        $('#submit-btn').prop('disabled', false).html('<i class="fas fa-save"></i> {% if practice %}更新练习曲目{% else %}创建练习曲目{% endif %}');
+    });
+});
+</script>
+{% endblock %} 

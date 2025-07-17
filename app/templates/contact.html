@@ -13,24 +13,30 @@
                     <div class="card">
                         <div class="card-body">
                             <h5 class="card-title">发送消息</h5>
-                            <form>
+                            <form method="POST" id="contactForm">
                                 <div class="mb-3">
                                     <label for="name" class="form-label">姓名</label>
-                                    <input type="text" class="form-control" id="name" required>
+                                    <input type="text" class="form-control" id="name" name="name" 
+                                           placeholder="请输入您的姓名" required>
                                 </div>
                                 <div class="mb-3">
                                     <label for="email" class="form-label">邮箱</label>
-                                    <input type="email" class="form-control" id="email" required>
+                                    <input type="email" class="form-control" id="email" name="email" 
+                                           placeholder="请输入您的邮箱地址" required>
                                 </div>
                                 <div class="mb-3">
                                     <label for="subject" class="form-label">主题</label>
-                                    <input type="text" class="form-control" id="subject" required>
+                                    <input type="text" class="form-control" id="subject" name="subject" 
+                                           placeholder="请输入消息主题" required>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="message" class="form-label">消息</label>
-                                    <textarea class="form-control" id="message" rows="5" required></textarea>
+                                    <label for="message" class="form-label">消息内容</label>
+                                    <textarea class="form-control" id="message" name="message" rows="5" 
+                                              placeholder="请详细描述您的问题或建议..." required></textarea>
                                 </div>
-                                <button type="submit" class="btn btn-primary">发送消息</button>
+                                <button type="submit" class="btn btn-primary" id="submitBtn">
+                                    <i class="fas fa-paper-plane me-2"></i>发送消息
+                                </button>
                             </form>
                         </div>
                     </div>
@@ -65,4 +71,74 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('contactForm');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    form.addEventListener('submit', function(e) {
+        // 防止重复提交
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>发送中...';
+        
+        // 简单的客户端验证
+        const name = document.getElementById('name').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const subject = document.getElementById('subject').value.trim();
+        const message = document.getElementById('message').value.trim();
+        
+        if (!name || !email || !subject || !message) {
+            e.preventDefault();
+            alert('请填写所有必填字段');
+            resetButton();
+            return false;
+        }
+        
+        // 邮箱格式简单验证
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            e.preventDefault();
+            alert('请输入有效的邮箱地址');
+            resetButton();
+            return false;
+        }
+        
+        // 如果验证通过，表单会正常提交
+        // 3秒后重新启用按钮（防止用户等待过程中多次点击）
+        setTimeout(resetButton, 3000);
+    });
+    
+    function resetButton() {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>发送消息';
+    }
+    
+    // 字符计数功能
+    const messageTextarea = document.getElementById('message');
+    const maxLength = 1000;
+    
+    // 创建字符计数显示
+    const charCounter = document.createElement('div');
+    charCounter.className = 'form-text text-end';
+    charCounter.innerHTML = `<span id="charCount">0</span>/${maxLength} 字符`;
+    messageTextarea.parentNode.appendChild(charCounter);
+    
+    messageTextarea.addEventListener('input', function() {
+        const currentLength = this.value.length;
+        document.getElementById('charCount').textContent = currentLength;
+        
+        if (currentLength > maxLength * 0.9) {
+            charCounter.className = 'form-text text-end text-warning';
+        } else {
+            charCounter.className = 'form-text text-end';
+        }
+        
+        if (currentLength > maxLength) {
+            this.value = this.value.substring(0, maxLength);
+            charCounter.className = 'form-text text-end text-danger';
+        }
+    });
+});
+</script>
 {% endblock %} 

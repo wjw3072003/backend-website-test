@@ -1,0 +1,2 @@
+function t(a,e){return{description:"Personalized guidance on intonation, posture, rhythm, and dynamics to elevate your practice",favicon:"https://framerusercontent.com/assets/hon29rZFIX4W220VtsDFnmmKNvo.png",robots:"max-image-preview:large",socialImage:"https://framerusercontent.com/assets/i3fDltIoGoWfwdvbU7Idwvrf9fE.png",title:"AI MusPal - Empowering Violin Practice with AI Feedback "}}export{t as a};
+//# sourceMappingURL=chunk-WXTBUNAP.mjs.map

@@ -31,7 +31,20 @@
                 <h1 class="h2">管理后台</h1>
                 <div class="btn-toolbar mb-2 mb-md-0">
                     <div class="btn-group me-2">
-                        <button type="button" class="btn btn-sm btn-outline-secondary">导出</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                            <i class="fas fa-download"></i> 导出数据
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('admin.export_data', export_type='users') }}">
+                                <i class="fas fa-users"></i> 用户数据
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('admin.export_data', export_type='practices') }}">
+                                <i class="fas fa-music"></i> 练习曲目
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('admin.export_data', export_type='records') }}">
+                                <i class="fas fa-history"></i> 练习记录
+                            </a></li>
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -128,7 +141,42 @@
                             <h6 class="m-0 font-weight-bold text-primary">最新用户</h6>
                         </div>
                         <div class="card-body">
-                            <div class="small text-gray-500">最近注册的用户...</div>
+                            {% if stats.recent_users %}
+                                {% for user in stats.recent_users %}
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="me-3">
+                                        <div class="icon-circle bg-primary">
+                                            <i class="fas fa-user text-white"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="small">
+                                            <strong>{{ user.username }}</strong>
+                                            <span class="text-muted">({{ user.email }})</span>
+                                        </div>
+                                        <div class="small text-gray-500">
+                                            {{ user.created_at.strftime('%Y-%m-%d %H:%M') if user.created_at }}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <a href="{{ url_for('admin.user_detail', user_id=user.id) }}" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="text-center text-muted py-3">
+                                    <i class="fas fa-users fa-2x mb-2"></i>
+                                    <p>暂无新用户</p>
+                                </div>
+                            {% endif %}
+                            <div class="text-center mt-3">
+                                <a href="{{ url_for('admin.users') }}" class="btn btn-sm btn-primary">
+                                    查看所有用户 <i class="fas fa-arrow-right"></i>
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -169,5 +217,80 @@
 .border-left-warning {
     border-left: 0.25rem solid #f6c23e !important;
 }
+
+.icon-circle {
+    height: 2.5rem;
+    width: 2.5rem;
+    border-radius: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 </style>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+$(document).ready(function() {
+    // 练习趋势图表
+    const ctx = document.getElementById('myAreaChart');
+    if (ctx) {
+        // 从后端获取的数据
+        const trendData = [
+            {% for item in stats.trend_data %}
+            { date: "{{ item.date }}", count: {{ item.count }} }{% if not loop.last %},{% endif %}
+            {% endfor %}
+        ];
+        
+        const labels = trendData.map(item => item.date);
+        const data = trendData.map(item => item.count);
+        
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '练习次数',
+                    data: data,
+                    borderColor: '#4e73df',
+                    backgroundColor: 'rgba(78, 115, 223, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: '最近30天练习趋势'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: '#e3e6f0'
+                        },
+                        ticks: {
+                            stepSize: 1
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: '#e3e6f0'
+                        }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
 {% endblock %} 

@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}老师仪表板 - AiMusPal{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>老师仪表板</h1>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('teacher.teacher_classes') }}" class="btn btn-primary">
+                <i class="fas fa-users"></i> 班级管理
+            </a>
+            <a href="{{ url_for('teacher.teacher_assignments') }}" class="btn btn-success">
+                <i class="fas fa-tasks"></i> 布置作业
+            </a>
+        </div>
+    </div>
+    
+    <!-- 统计卡片 -->
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-chalkboard-teacher fs-1 text-primary"></i>
+                    <h5 class="card-title mt-2">我的班级</h5>
+                    <h3 class="text-primary">{{ stats.total_classes or 0 }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-user-graduate fs-1 text-success"></i>
+                    <h5 class="card-title mt-2">学生总数</h5>
+                    <h3 class="text-success">{{ stats.total_students or 0 }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-clipboard-list fs-1 text-warning"></i>
+                    <h5 class="card-title mt-2">作业数量</h5>
+                    <h3 class="text-warning">{{ stats.total_assignments or 0 }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-hourglass-half fs-1 text-danger"></i>
+                    <h5 class="card-title mt-2">待批改</h5>
+                    <h3 class="text-danger">{{ stats.pending_grades or 0 }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <!-- 快捷操作 -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">快捷操作</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('teacher.teacher_students') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-users"></i> 学生管理
+                        </a>
+                        <a href="{{ url_for('teacher.teacher_assignments') }}" class="btn btn-outline-success">
+                            <i class="fas fa-plus"></i> 布置新作业
+                        </a>
+                        <a href="{{ url_for('teacher.teacher_grades') }}" class="btn btn-outline-warning">
+                            <i class="fas fa-star"></i> 成绩管理
+                        </a>
+                        <a href="{{ url_for('teacher.teacher_reports') }}" class="btn btn-outline-info">
+                            <i class="fas fa-chart-bar"></i> 教学报告
+                        </a>
+                        <a href="{{ url_for('teacher.teacher_resources') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-book"></i> 教学资源
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 最新作业 -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">最新作业</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_assignments %}
+                        {% for assignment in recent_assignments %}
+                        <div class="mb-3 pb-2 border-bottom">
+                            <h6 class="mb-1">{{ assignment.title }}</h6>
+                            <small class="text-muted">
+                                <i class="fas fa-calendar"></i> 
+                                {{ assignment.created_at.strftime('%m-%d %H:%M') }}
+                            </small>
+                            <br>
+                            <small class="text-info">
+                                截止: {{ assignment.due_date.strftime('%m-%d %H:%M') if assignment.due_date else '无限制' }}
+                            </small>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">暂无作业</p>
+                    {% endif %}
+                    <a href="{{ url_for('teacher.teacher_assignments') }}" class="btn btn-sm btn-primary">查看全部</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 最新成绩 -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">最新成绩</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_grades %}
+                        {% for grade in recent_grades %}
+                        <div class="mb-3 pb-2 border-bottom">
+                            <div class="d-flex justify-content-between">
+                                <h6 class="mb-1">{{ grade.assignment.title if grade.assignment else '未知作业' }}</h6>
+                                <span class="badge bg-{{ 'success' if grade.score >= 80 else 'warning' if grade.score >= 60 else 'danger' }}">
+                                    {{ grade.score }}分
+                                </span>
+                            </div>
+                            <small class="text-muted">
+                                学生: {{ grade.student.username if grade.student else '未知' }}
+                            </small>
+                            <br>
+                            <small class="text-muted">
+                                <i class="fas fa-calendar"></i> 
+                                {{ grade.created_at.strftime('%m-%d %H:%M') }}
+                            </small>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">暂无成绩记录</p>
+                    {% endif %}
+                    <a href="{{ url_for('teacher.teacher_grades') }}" class="btn btn-sm btn-primary">查看全部</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,11 @@
+{
+  "timestamp": "2025-07-16T19:11:36.036041",
+  "verification_rate": 50.0,
+  "status": "FAILED",
+  "checks": {
+    "routes": true,
+    "database": false,
+    "templates": true,
+    "account": false
+  }
+}

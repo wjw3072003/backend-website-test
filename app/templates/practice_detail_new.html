@@ -1,0 +1,218 @@
+{% extends "base_new.html" %}
+
+{% block title %}{{ practice.title }} - 练习详情 - AI MusPal{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- 返回按钮 -->
+    <div class="mb-4">
+        <a href="{{ url_for('main.practices') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>返回练习列表
+        </a>
+    </div>
+
+    <!-- 曲目信息卡片 -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body p-4">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h2 class="fw-bold mb-3">{{ practice.title }}</h2>
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-user me-2 text-primary"></i>
+                                <span class="text-gray">{{ practice.composer or '未知作曲家' }}</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-music me-2 text-primary"></i>
+                                <span class="text-gray">{{ practice.genre or '未分类' }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="text-gray me-2">难度等级:</span>
+                            <div class="d-flex">
+                                {% for i in range(practice.difficulty_level) %}
+                                    <i class="fas fa-star text-warning me-1"></i>
+                                {% endfor %}
+                                {% for i in range(10 - practice.difficulty_level) %}
+                                    <i class="far fa-star text-muted me-1"></i>
+                                {% endfor %}
+                            </div>
+                            <span class="badge bg-primary ms-2">{{ practice.difficulty_level }}/10</span>
+                        </div>
+                    </div>
+                    {% if practice.description %}
+                    <div class="mb-3">
+                        <p class="text-gray mb-0">{{ practice.description }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="col-lg-4 text-center">
+                    <a href="{{ url_for('main.practice_upload', practice_id=practice.id) }}" 
+                       class="btn btn-primary btn-lg px-4 py-3">
+                        <i class="fas fa-microphone me-2"></i>开始练习
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 统计信息卡片 -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm border-0 text-center h-100">
+                <div class="card-body p-4">
+                    <div class="display-6 fw-bold text-primary mb-2">{{ stats.total_attempts }}</div>
+                    <p class="text-gray mb-0">练习次数</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm border-0 text-center h-100">
+                <div class="card-body p-4">
+                    <div class="display-6 fw-bold text-success mb-2">{{ stats.best_score }}</div>
+                    <p class="text-gray mb-0">最高分数</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm border-0 text-center h-100">
+                <div class="card-body p-4">
+                    <div class="display-6 fw-bold text-info mb-2">{{ stats.average_score }}</div>
+                    <p class="text-gray mb-0">平均分数</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm border-0 text-center h-100">
+                <div class="card-body p-4">
+                    <div class="display-6 fw-bold text-warning mb-2">
+                        {% if stats.last_practice %}
+                            {{ stats.last_practice.strftime('%m/%d') }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </div>
+                    <p class="text-gray mb-0">最后练习</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 练习记录卡片 -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white border-0 py-3">
+            <h4 class="fw-bold mb-0">
+                <i class="fas fa-history me-2 text-primary"></i>练习记录
+            </h4>
+        </div>
+        <div class="card-body p-0">
+            {% if records %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="border-0 py-3">练习时间</th>
+                                <th class="border-0 py-3">总分</th>
+                                <th class="border-0 py-3">节拍准确度</th>
+                                <th class="border-0 py-3">音高准确度</th>
+                                <th class="border-0 py-3">节奏准确度</th>
+                                <th class="border-0 py-3">状态</th>
+                                <th class="border-0 py-3">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in records %}
+                            <tr>
+                                <td class="py-3">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-clock me-2 text-muted"></i>
+                                        {{ record.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                    </div>
+                                </td>
+                                <td class="py-3">
+                                    <span class="badge bg-primary fs-6">{{ record.score or '-' }}</span>
+                                </td>
+                                <td class="py-3">
+                                    <div class="d-flex align-items-center">
+                                        <div class="progress me-2" style="width: 60px; height: 6px;">
+                                            <div class="progress-bar bg-success" style="width: {{ record.tempo_accuracy or 0 }}%"></div>
+                                        </div>
+                                        <span class="text-gray">{{ record.tempo_accuracy or '-' }}%</span>
+                                    </div>
+                                </td>
+                                <td class="py-3">
+                                    <div class="d-flex align-items-center">
+                                        <div class="progress me-2" style="width: 60px; height: 6px;">
+                                            <div class="progress-bar bg-info" style="width: {{ record.pitch_accuracy or 0 }}%"></div>
+                                        </div>
+                                        <span class="text-gray">{{ record.pitch_accuracy or '-' }}%</span>
+                                    </div>
+                                </td>
+                                <td class="py-3">
+                                    <div class="d-flex align-items-center">
+                                        <div class="progress me-2" style="width: 60px; height: 6px;">
+                                            <div class="progress-bar bg-warning" style="width: {{ record.rhythm_accuracy or 0 }}%"></div>
+                                        </div>
+                                        <span class="text-gray">{{ record.rhythm_accuracy or '-' }}%</span>
+                                    </div>
+                                </td>
+                                <td class="py-3">
+                                    {% if record.status == 'completed' %}
+                                        <span class="badge bg-success">已完成</span>
+                                    {% elif record.status == 'analyzing' %}
+                                        <span class="badge bg-warning">分析中</span>
+                                    {% elif record.status == 'failed' %}
+                                        <span class="badge bg-danger">失败</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ record.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="py-3">
+                                    {% if record.status == 'completed' %}
+                                        <a href="{{ url_for('main.practice_result', record_id=record.id) }}" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye me-1"></i>查看详情
+                                        </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-music fa-4x text-muted"></i>
+                    </div>
+                    <h5 class="fw-bold mb-3">还没有练习记录</h5>
+                    <p class="text-gray mb-4">点击"开始练习"按钮上传您的第一个练习音频</p>
+                    <a href="{{ url_for('main.practice_upload', practice_id=practice.id) }}" 
+                       class="btn btn-primary btn-lg">
+                        <i class="fas fa-microphone me-2"></i>开始练习
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // 进度条动画
+    $('.progress-bar').each(function() {
+        var width = $(this).css('width');
+        $(this).css('width', '0%').animate({
+            width: width
+        }, 1000);
+    });
+});
+</script>
+{% endblock %} 

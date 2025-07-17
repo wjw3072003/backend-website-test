@@ -8,7 +8,12 @@
         <div class="col-md-4">
             <div class="card">
                 <div class="card-body text-center">
-                    <i class="fas fa-user-circle fa-5x text-muted mb-3"></i>
+                    {% if user.avatar %}
+                        <img src="{{ url_for('static', filename='uploads/' + user.avatar) }}" 
+                             class="rounded-circle mb-3" width="120" height="120" alt="头像">
+                    {% else %}
+                        <i class="fas fa-user-circle fa-5x text-muted mb-3"></i>
+                    {% endif %}
                     <h4>{{ user.first_name }} {{ user.last_name }}</h4>
                     <p class="text-muted">{{ user.email }}</p>
                     {% if user.is_verified %}
@@ -16,6 +21,20 @@
                     {% else %}
                         <span class="badge bg-warning">未验证</span>
                     {% endif %}
+                    
+                    <!-- 头像上传表单 -->
+                    <div class="mt-3">
+                        <form id="avatar-form" method="POST" action="{{ url_for('auth.upload_avatar') }}" enctype="multipart/form-data">
+                            <div class="mb-2">
+                                <input type="file" class="form-control form-control-sm" id="avatar_file" name="avatar_file" 
+                                       accept="image/*" style="display: none;">
+                                <button type="button" class="btn btn-outline-primary btn-sm" 
+                                        onclick="document.getElementById('avatar_file').click();">
+                                    <i class="fas fa-camera"></i> 更换头像
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
             
@@ -66,24 +85,138 @@
                     <h5>修改密码</h5>
                 </div>
                 <div class="card-body">
-                    <form>
+                    <form method="POST" action="{{ url_for('auth.change_password') }}">
                         <div class="mb-3">
                             <label for="current_password" class="form-label">当前密码</label>
-                            <input type="password" class="form-control" id="current_password" required>
+                            <input type="password" class="form-control" id="current_password" name="current_password" required>
                         </div>
                         <div class="mb-3">
                             <label for="new_password" class="form-label">新密码</label>
-                            <input type="password" class="form-control" id="new_password" required>
+                            <input type="password" class="form-control" id="new_password" name="new_password" minlength="6" required>
+                            <div class="form-text">密码长度至少6位</div>
                         </div>
                         <div class="mb-3">
                             <label for="confirm_password" class="form-label">确认新密码</label>
-                            <input type="password" class="form-control" id="confirm_password" required>
+                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
                         </div>
-                        <button type="submit" class="btn btn-warning">修改密码</button>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fas fa-key"></i> 修改密码
+                        </button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // 头像文件选择处理
+    $('#avatar_file').on('change', function() {
+        const file = this.files[0];
+        if (file) {
+            // 验证文件类型
+            const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+            if (!validTypes.includes(file.type)) {
+                alert('请选择有效的图片文件（JPG、PNG、GIF、WEBP）');
+                return;
+            }
+            
+            // 验证文件大小（5MB）
+            const maxSize = 5 * 1024 * 1024;
+            if (file.size > maxSize) {
+                alert('图片文件过大，请选择小于5MB的图片');
+                return;
+            }
+            
+            // 预览图片
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = `<img src="${e.target.result}" class="rounded-circle mb-3" width="120" height="120" alt="头像预览">`;
+                if ($('img.rounded-circle').length > 0) {
+                    $('img.rounded-circle').replaceWith(preview);
+                } else {
+                    $('.fa-user-circle').replaceWith(preview);
+                }
+            };
+            reader.readAsDataURL(file);
+            
+            // 自动提交表单
+            uploadAvatar();
+        }
+    });
+    
+    function uploadAvatar() {
+        const formData = new FormData($('#avatar-form')[0]);
+        
+        // 显示上传状态
+        const uploadBtn = $('.btn:contains("更换头像")');
+        const originalText = uploadBtn.html();
+        uploadBtn.html('<i class="fas fa-spinner fa-spin"></i> 上传中...').prop('disabled', true);
+        
+        $.ajax({
+            url: $('#avatar-form').attr('action'),
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                if (response.success) {
+                    // 显示成功消息
+                    const alertHtml = `
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            ${response.message}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    `;
+                    $('.container').prepend(alertHtml);
+                    
+                    // 自动隐藏成功消息
+                    setTimeout(function() {
+                        $('.alert-success').fadeOut();
+                    }, 3000);
+                } else {
+                    alert('上传失败：' + (response.error || '未知错误'));
+                    // 恢复原来的头像
+                    location.reload();
+                }
+            },
+            error: function(xhr) {
+                let errorMsg = '上传失败，请稍后重试';
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    errorMsg = response.error || errorMsg;
+                } catch (e) {
+                    // 忽略JSON解析错误
+                }
+                alert(errorMsg);
+                // 恢复原来的头像
+                location.reload();
+            },
+            complete: function() {
+                // 恢复按钮状态
+                uploadBtn.html(originalText).prop('disabled', false);
+            }
+        });
+    }
+    
+    // 密码确认验证
+    $('#confirm_password').on('input', function() {
+        const newPassword = $('#new_password').val();
+        const confirmPassword = $(this).val();
+        
+        if (confirmPassword && newPassword !== confirmPassword) {
+            $(this).addClass('is-invalid');
+            if (!$(this).next('.invalid-feedback').length) {
+                $(this).after('<div class="invalid-feedback">两次输入的密码不一致</div>');
+            }
+        } else {
+            $(this).removeClass('is-invalid');
+            $(this).next('.invalid-feedback').remove();
+        }
+    });
+});
+</script>
 {% endblock %} 

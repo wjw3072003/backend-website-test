@@ -6,7 +6,8 @@ from datetime import datetime
 
 from app import db
 from app.models.user import User, Role
-from app.utils.email import send_verification_email
+from app.models.auth import PasswordResetToken
+from app.utils.email import send_verification_email, send_password_reset_email
 from app.utils.decorators import roles_required
 
 auth = Blueprint('auth', __name__)
@@ -184,3 +185,199 @@ def update_profile():
         flash(message, 'error')
     
     return redirect(url_for('auth.profile'))
+
+@auth.route('/change-password', methods=['POST'])
+@login_required
+def change_password():
+    """修改密码"""
+    data = request.get_json() if request.is_json else request.form
+    
+    current_password = data.get('current_password', '')
+    new_password = data.get('new_password', '')
+    confirm_password = data.get('confirm_password', '')
+    
+    # 验证输入
+    if not current_password or not new_password or not confirm_password:
+        message = '请填写所有密码字段'
+        if request.is_json:
+            return jsonify({'error': message}), 400
+        flash(message, 'error')
+        return redirect(url_for('auth.profile'))
+    
+    # 验证当前密码
+    if not current_user.check_password(current_password):
+        message = '当前密码错误'
+        if request.is_json:
+            return jsonify({'error': message}), 400
+        flash(message, 'error')
+        return redirect(url_for('auth.profile'))
+    
+    # 验证新密码
+    if len(new_password) < 6:
+        message = '新密码长度至少6位'
+        if request.is_json:
+            return jsonify({'error': message}), 400
+        flash(message, 'error')
+        return redirect(url_for('auth.profile'))
+    
+    if new_password != confirm_password:
+        message = '两次输入的新密码不一致'
+        if request.is_json:
+            return jsonify({'error': message}), 400
+        flash(message, 'error')
+        return redirect(url_for('auth.profile'))
+    
+    try:
+        # 更新密码
+        current_user.password_hash = generate_password_hash(new_password)
+        db.session.commit()
+        
+        message = '密码修改成功'
+        if request.is_json:
+            return jsonify({'message': message}), 200
+        flash(message, 'success')
+    except Exception as e:
+        db.session.rollback()
+        message = '密码修改失败，请稍后重试'
+        if request.is_json:
+            return jsonify({'error': message}), 500
+        flash(message, 'error')
+    
+    return redirect(url_for('auth.profile'))
+
+@auth.route('/upload-avatar', methods=['POST'])
+@login_required
+def upload_avatar():
+    """上传头像"""
+    if 'avatar_file' not in request.files:
+        return jsonify({'success': False, 'error': '请选择头像文件'}), 400
+    
+    file = request.files['avatar_file']
+    if file.filename == '':
+        return jsonify({'success': False, 'error': '请选择头像文件'}), 400
+    
+    try:
+        from app.utils.file_handler import save_avatar_file, delete_file
+        from flask import current_app
+        import os
+        
+        # 删除旧头像
+        if current_user.avatar:
+            old_avatar_path = os.path.join(current_app.config['UPLOAD_FOLDER'], current_user.avatar)
+            delete_file(old_avatar_path)
+        
+        # 保存新头像
+        avatar_filename = save_avatar_file(file, current_user.id)
+        
+        # 更新用户头像信息
+        current_user.avatar = avatar_filename
+        db.session.commit()
+        
+        return jsonify({
+            'success': True, 
+            'message': '头像上传成功！',
+            'avatar_url': f"/static/uploads/{avatar_filename}"
+        }), 200
+        
+    except ValueError as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': '头像上传失败，请稍后重试'}), 500
+
+@auth.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    """忘记密码"""
+    if request.method == 'POST':
+        data = request.get_json() if request.is_json else request.form
+        email = data.get('email', '').strip().lower()
+        
+        if not email:
+            message = '请输入邮箱地址'
+            if request.is_json:
+                return jsonify({'error': message}), 400
+            flash(message, 'error')
+            return render_template('auth/forgot_password.html')
+        
+        user = User.query.filter_by(email=email).first()
+        
+        if user:
+            # 创建重置令牌
+            reset_token = PasswordResetToken.create_token(user)
+            
+            # 发送重置邮件
+            try:
+                send_password_reset_email(user, reset_token.token)
+                message = '密码重置邮件已发送，请查看您的邮箱'
+                if request.is_json:
+                    return jsonify({'message': message}), 200
+                flash(message, 'success')
+            except Exception as e:
+                message = '邮件发送失败，请稍后重试'
+                if request.is_json:
+                    return jsonify({'error': message}), 500
+                flash(message, 'error')
+        else:
+            # 即使用户不存在也显示成功消息，防止邮箱枚举攻击
+            message = '如果邮箱存在，密码重置邮件已发送'
+            if request.is_json:
+                return jsonify({'message': message}), 200
+            flash(message, 'info')
+        
+        return redirect(url_for('auth.login'))
+    
+    return render_template('auth/forgot_password.html')
+
+@auth.route('/reset-password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    """重置密码"""
+    reset_token = PasswordResetToken.verify_token(token)
+    
+    if not reset_token:
+        flash('重置链接无效或已过期', 'error')
+        return redirect(url_for('auth.forgot_password'))
+    
+    if request.method == 'POST':
+        data = request.get_json() if request.is_json else request.form
+        password = data.get('password', '')
+        password_confirm = data.get('password_confirm', '')
+        
+        if not password or len(password) < 6:
+            message = '密码长度至少6位'
+            if request.is_json:
+                return jsonify({'error': message}), 400
+            flash(message, 'error')
+            return render_template('auth/reset_password.html', token=token)
+        
+        if password != password_confirm:
+            message = '两次输入的密码不一致'
+            if request.is_json:
+                return jsonify({'error': message}), 400
+            flash(message, 'error')
+            return render_template('auth/reset_password.html', token=token)
+        
+        try:
+            # 更新用户密码
+            user = reset_token.user
+            user.set_password(password)
+            
+            # 标记令牌为已使用
+            reset_token.mark_as_used()
+            
+            db.session.commit()
+            
+            message = '密码重置成功，请使用新密码登录'
+            if request.is_json:
+                return jsonify({'message': message}), 200
+            
+            flash(message, 'success')
+            return redirect(url_for('auth.login'))
+            
+        except Exception as e:
+            db.session.rollback()
+            message = '密码重置失败，请稍后重试'
+            if request.is_json:
+                return jsonify({'error': message}), 500
+            flash(message, 'error')
+    
+    return render_template('auth/reset_password.html', token=token)

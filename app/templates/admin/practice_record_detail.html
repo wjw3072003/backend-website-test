@@ -1,0 +1,340 @@
+{% extends "base.html" %}
+
+{% block title %}练习记录详情 - 管理后台 - AiMusPal{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- 返回按钮 -->
+    <div class="mb-3">
+        <a href="{{ url_for('admin.practice_records') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> 返回练习记录列表
+        </a>
+        <a href="{{ url_for('admin.user_detail', user_id=record.user_id) }}" class="btn btn-outline-info">
+            <i class="fas fa-user"></i> 查看用户详情
+        </a>
+    </div>
+
+    <!-- 记录基本信息 -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3 class="mb-0">
+                <i class="fas fa-chart-line text-primary"></i> 
+                练习记录详情
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <table class="table table-borderless">
+                        <tr>
+                            <td width="30%"><strong>记录ID:</strong></td>
+                            <td>{{ record.id }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>练习用户:</strong></td>
+                            <td>
+                                <a href="{{ url_for('admin.user_detail', user_id=record.user_id) }}" 
+                                   class="text-decoration-none">
+                                    {{ record.user.username }} ({{ record.user.email }})
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>练习曲目:</strong></td>
+                            <td>{{ record.practice.title }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>作曲家:</strong></td>
+                            <td>{{ record.practice.composer or '未知' }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>曲目难度:</strong></td>
+                            <td>
+                                {% for i in range(record.practice.difficulty_level) %}
+                                    <i class="fas fa-star text-warning"></i>
+                                {% endfor %}
+                                ({{ record.practice.difficulty_level }}/10)
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>练习时间:</strong></td>
+                            <td>{{ record.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <table class="table table-borderless">
+                        <tr>
+                            <td width="30%"><strong>状态:</strong></td>
+                            <td>
+                                {% if record.status == 'completed' %}
+                                    <span class="badge bg-success">已完成</span>
+                                {% elif record.status == 'analyzing' %}
+                                    <span class="badge bg-warning">分析中</span>
+                                {% elif record.status == 'failed' %}
+                                    <span class="badge bg-danger">失败</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ record.status }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>总分:</strong></td>
+                            <td>
+                                {% if record.score %}
+                                    <span class="h5 text-primary">{{ record.score }}</span>
+                                    {% if record.score >= 90 %}
+                                        <span class="badge bg-success ms-2">优秀</span>
+                                    {% elif record.score >= 80 %}
+                                        <span class="badge bg-info ms-2">良好</span>
+                                    {% elif record.score >= 70 %}
+                                        <span class="badge bg-warning ms-2">一般</span>
+                                    {% else %}
+                                        <span class="badge bg-danger ms-2">需改进</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="text-muted">未评分</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>节拍准确度:</strong></td>
+                            <td>{{ record.tempo_accuracy or '-' }}%</td>
+                        </tr>
+                        <tr>
+                            <td><strong>音高准确度:</strong></td>
+                            <td>{{ record.pitch_accuracy or '-' }}%</td>
+                        </tr>
+                        <tr>
+                            <td><strong>节奏准确度:</strong></td>
+                            <td>{{ record.rhythm_accuracy or '-' }}%</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI分析结果 -->
+    <div class="row">
+        <div class="col-md-8">
+            <!-- AI反馈 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-robot text-info"></i> AI分析反馈
+                    </h4>
+                </div>
+                <div class="card-body">
+                    {% if record.ai_feedback %}
+                        <div class="alert alert-light border p-3">
+                            {{ record.ai_feedback }}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i> 
+                            暂无AI分析反馈
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- 改进建议 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-lightbulb text-warning"></i> 改进建议
+                    </h4>
+                </div>
+                <div class="card-body">
+                    {% if record.improvement_suggestions %}
+                        <div class="alert alert-info border p-3">
+                            {{ record.improvement_suggestions | replace('\n', '<br>') | safe }}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-secondary">
+                            <i class="fas fa-info-circle"></i> 
+                            暂无改进建议
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- 音频文件 -->
+            {% if record.audio_files %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-volume-up text-success"></i> 音频文件
+                    </h4>
+                </div>
+                <div class="card-body">
+                    {% for audio in record.audio_files %}
+                    <div class="mb-3 p-3 border rounded">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h6>{{ audio.original_filename }}</h6>
+                                <audio controls class="w-100 mb-2">
+                                    <source src="{{ url_for('static', filename='uploads/' + audio.filename) }}" 
+                                            type="{{ audio.file_type }}">
+                                    您的浏览器不支持音频播放。
+                                </audio>
+                            </div>
+                            <div class="col-md-4">
+                                <small class="text-muted">
+                                    <strong>文件信息:</strong><br>
+                                    大小: {{ (audio.file_size / 1024 / 1024) | round(2) }} MB<br>
+                                    格式: {{ audio.file_type }}<br>
+                                    上传时间: {{ audio.created_at.strftime('%Y-%m-%d %H:%M') if audio.created_at else '未知' }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-md-4">
+            <!-- 快速操作 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-cogs"></i> 快速操作
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('admin.user_detail', user_id=record.user_id) }}" 
+                           class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-user"></i> 查看用户详情
+                        </a>
+                        <a href="{{ url_for('admin.practices') }}" 
+                           class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-music"></i> 练习曲目管理
+                        </a>
+                        <a href="{{ url_for('admin.practice_records') }}" 
+                           class="btn btn-outline-info btn-sm">
+                            <i class="fas fa-list"></i> 所有练习记录
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 相关统计 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-bar"></i> 相关统计
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center">
+                        <p class="mb-1"><strong>该用户练习次数:</strong></p>
+                        <h4 class="text-primary">
+                            {{ record.user.practice_records | length }}
+                        </h4>
+                        
+                        <hr class="my-3">
+                        
+                        <p class="mb-1"><strong>该曲目被练习次数:</strong></p>
+                        <h4 class="text-info">
+                            {{ record.practice.practice_records | length }}
+                        </h4>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 时间线 -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-clock"></i> 状态时间线
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-primary"></div>
+                            <div class="timeline-content">
+                                <h6 class="mb-1">练习上传</h6>
+                                <small class="text-muted">{{ record.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                            </div>
+                        </div>
+                        
+                        {% if record.status == 'completed' and record.score %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-success"></div>
+                            <div class="timeline-content">
+                                <h6 class="mb-1">分析完成</h6>
+                                <small class="text-muted">获得 {{ record.score }} 分</small>
+                            </div>
+                        </div>
+                        {% elif record.status == 'analyzing' %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-warning"></div>
+                            <div class="timeline-content">
+                                <h6 class="mb-1">正在分析</h6>
+                                <small class="text-muted">AI分析中...</small>
+                            </div>
+                        </div>
+                        {% elif record.status == 'failed' %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-danger"></div>
+                            <div class="timeline-content">
+                                <h6 class="mb-1">分析失败</h6>
+                                <small class="text-muted">需要重新处理</small>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.timeline-item:last-child {
+    margin-bottom: 0;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -38px;
+    top: 0;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 3px solid #fff;
+    box-shadow: 0 0 0 2px #dee2e6;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: -31px;
+    top: 8px;
+    bottom: 8px;
+    width: 2px;
+    background-color: #dee2e6;
+}
+
+.timeline-content {
+    padding-left: 0;
+}
+</style>
+{% endblock %} 

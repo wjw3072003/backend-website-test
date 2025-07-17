@@ -31,38 +31,50 @@
                 <h1 class="h2">用户管理</h1>
                 <div class="btn-toolbar mb-2 mb-md-0">
                     <div class="btn-group me-2">
-                        <button type="button" class="btn btn-sm btn-primary">添加用户</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary">导出</button>
+                        <a href="{{ url_for('admin.new_user') }}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-plus"></i> 添加用户
+                        </a>
+                        <a href="{{ url_for('admin.export_data', export_type='users') }}" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-download"></i> 导出
+                        </a>
                     </div>
                 </div>
             </div>
 
             <!-- 搜索和筛选 -->
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <div class="input-group">
-                        <input type="text" class="form-control" placeholder="搜索用户..." name="search" value="{{ request.args.get('search', '') }}">
-                        <button class="btn btn-outline-secondary" type="button">搜索</button>
+            <form method="GET" id="search-form">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="搜索用户..." 
+                                   name="search" id="search-input" value="{{ search }}">
+                            <button class="btn btn-outline-secondary" type="submit">
+                                <i class="fas fa-search"></i> 搜索
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" name="role" id="role-filter">
+                            <option value="">所有角色</option>
+                            {% for role in roles %}
+                            <option value="{{ role.name }}" {% if role_filter == role.name %}selected{% endif %}>
+                                {{ role.description or role.name.title() }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-outline-primary">
+                                <i class="fas fa-filter"></i> 筛选
+                            </button>
+                            <a href="{{ url_for('admin.users') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-undo"></i> 重置
+                            </a>
+                        </div>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <select class="form-select" name="role">
-                        <option value="">所有角色</option>
-                        {% for role in roles %}
-                        <option value="{{ role.name }}" {% if request.args.get('role') == role.name %}selected{% endif %}>
-                            {{ role.description }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <select class="form-select" name="status">
-                        <option value="">所有状态</option>
-                        <option value="active" {% if request.args.get('status') == 'active' %}selected{% endif %}>活跃</option>
-                        <option value="inactive" {% if request.args.get('status') == 'inactive' %}selected{% endif %}>未激活</option>
-                    </select>
-                </div>
-            </div>
+            </form>
 
             <!-- 用户列表 -->
             <div class="card shadow">
@@ -107,15 +119,23 @@
                                     </td>
                                     <td>{{ user.created_at.strftime('%Y-%m-%d') if user.created_at else '-' }}</td>
                                     <td>
-                                        <a href="{{ url_for('admin.user_detail', user_id=user.id) }}" class="btn btn-sm btn-info">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <button class="btn btn-sm btn-warning">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="btn btn-sm btn-danger">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a href="{{ url_for('admin.user_detail', user_id=user.id) }}" 
+                                               class="btn btn-outline-info" title="查看详情">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{{ url_for('admin.edit_user', user_id=user.id) }}" 
+                                               class="btn btn-outline-warning" title="编辑">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <form method="POST" action="{{ url_for('admin.toggle_user_status', user_id=user.id) }}" 
+                                                  style="display: inline;">
+                                                <button type="submit" class="btn btn-outline-secondary" 
+                                                        title="{% if user.is_active %}禁用{% else %}激活{% endif %}">
+                                                    <i class="fas fa-{% if user.is_active %}pause{% else %}play{% endif %}"></i>
+                                                </button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                                 {% endfor %}

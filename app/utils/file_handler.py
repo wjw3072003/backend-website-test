@@ -1,150 +1,157 @@
 import os
 import uuid
-from datetime import datetime
-from flask import current_app
 from werkzeug.utils import secure_filename
+from flask import current_app
+import hashlib
+from datetime import datetime
 
-def allowed_file(filename):
+# 支持的音频文件格式
+ALLOWED_AUDIO_EXTENSIONS = {'mp3', 'wav', 'm4a', 'flac', 'aac', 'ogg'}
+
+# 支持的图片文件格式
+ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+
+# 文件大小限制 (字节)
+MAX_AUDIO_SIZE = 50 * 1024 * 1024  # 50MB
+MAX_IMAGE_SIZE = 5 * 1024 * 1024   # 5MB
+
+def allowed_file(filename, file_type='audio'):
     """检查文件扩展名是否被允许"""
-    if not filename:
+    if not filename or '.' not in filename:
         return False
     
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in current_app.config['ALLOWED_EXTENSIONS']
+    extension = filename.rsplit('.', 1)[1].lower()
+    
+    if file_type == 'audio':
+        return extension in ALLOWED_AUDIO_EXTENSIONS
+    elif file_type == 'image':
+        return extension in ALLOWED_IMAGE_EXTENSIONS
+    
+    return False
+
+def get_file_size_mb(file_size_bytes):
+    """将文件大小转换为MB"""
+    return round(file_size_bytes / (1024 * 1024), 2)
+
+def validate_file_size(file_size, file_type='audio'):
+    """验证文件大小"""
+    if file_type == 'audio':
+        return file_size <= MAX_AUDIO_SIZE
+    elif file_type == 'image':
+        return file_size <= MAX_IMAGE_SIZE
+    
+    return False
 
 def generate_unique_filename(original_filename):
     """生成唯一的文件名"""
-    if not original_filename:
-        return None
-    
-    # 获取文件扩展名
-    extension = ''
     if '.' in original_filename:
-        extension = '.' + original_filename.rsplit('.', 1)[1].lower()
+        name, ext = original_filename.rsplit('.', 1)
+        ext = ext.lower()
+    else:
+        name = original_filename
+        ext = ''
     
-    # 生成唯一文件名
+    # 使用UUID和时间戳确保唯一性
+    unique_id = str(uuid.uuid4())
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    unique_id = str(uuid.uuid4())[:8]
     
-    return f"{timestamp}_{unique_id}{extension}"
+    if ext:
+        return f"{timestamp}_{unique_id}.{ext}"
+    else:
+        return f"{timestamp}_{unique_id}"
 
 def save_audio_file(file, practice_record_id):
     """保存音频文件"""
-    if not file or not allowed_file(file.filename):
-        raise ValueError("不支持的文件格式")
+    if not file or not allowed_file(file.filename, 'audio'):
+        raise ValueError("不支持的音频文件格式")
     
-    # 生成唯一文件名
+    # 检查文件大小
+    file.seek(0, 2)  # 移动到文件末尾
+    file_size = file.tell()
+    file.seek(0)  # 重置到文件开头
+    
+    if not validate_file_size(file_size, 'audio'):
+        raise ValueError(f"音频文件过大，最大支持{MAX_AUDIO_SIZE//1024//1024}MB")
+    
+    # 生成文件名
     filename = generate_unique_filename(file.filename)
     
-    # 创建按日期分类的子目录
-    date_dir = datetime.now().strftime('%Y/%m/%d')
-    upload_dir = os.path.join(current_app.config['UPLOAD_FOLDER'], 'audio', date_dir)
+    # 创建文件夹路径
+    upload_folder = current_app.config['UPLOAD_FOLDER']
+    audio_folder = os.path.join(upload_folder, 'audio')
     
-    # 确保目录存在
-    os.makedirs(upload_dir, exist_ok=True)
+    if not os.path.exists(audio_folder):
+        os.makedirs(audio_folder)
     
     # 保存文件
-    file_path = os.path.join(upload_dir, filename)
+    file_path = os.path.join(audio_folder, filename)
     file.save(file_path)
     
-    # 返回相对路径用于数据库存储
-    relative_path = os.path.join('audio', date_dir, filename)
-    return relative_path
+    return os.path.join('audio', filename)
 
-def save_score_file(file, practice_id):
-    """保存乐谱文件"""
-    if not file:
-        raise ValueError("文件不能为空")
+def save_avatar_file(file, user_id):
+    """保存头像文件"""
+    if not file or not allowed_file(file.filename, 'image'):
+        raise ValueError("不支持的图片文件格式")
     
-    # 生成唯一文件名
+    # 检查文件大小
+    file.seek(0, 2)  # 移动到文件末尾
+    file_size = file.tell()
+    file.seek(0)  # 重置到文件开头
+    
+    if not validate_file_size(file_size, 'image'):
+        raise ValueError(f"图片文件过大，最大支持{MAX_IMAGE_SIZE//1024//1024}MB")
+    
+    # 生成文件名
     filename = generate_unique_filename(file.filename)
     
-    # 创建乐谱文件目录
-    upload_dir = os.path.join(current_app.config['UPLOAD_FOLDER'], 'scores')
-    os.makedirs(upload_dir, exist_ok=True)
+    # 创建文件夹路径
+    upload_folder = current_app.config['UPLOAD_FOLDER']
+    avatar_folder = os.path.join(upload_folder, 'avatars')
+    
+    if not os.path.exists(avatar_folder):
+        os.makedirs(avatar_folder)
     
     # 保存文件
-    file_path = os.path.join(upload_dir, filename)
+    file_path = os.path.join(avatar_folder, filename)
     file.save(file_path)
     
-    # 返回相对路径
-    relative_path = os.path.join('scores', filename)
-    return relative_path
-
-def get_file_info(file_path):
-    """获取文件信息"""
-    if not os.path.exists(file_path):
-        return None
-    
-    stat = os.stat(file_path)
-    
-    return {
-        'size': stat.st_size,
-        'created_at': datetime.fromtimestamp(stat.st_ctime),
-        'modified_at': datetime.fromtimestamp(stat.st_mtime),
-        'extension': os.path.splitext(file_path)[1].lower()
-    }
+    return os.path.join('avatars', filename)
 
 def delete_file(file_path):
     """删除文件"""
     try:
-        if os.path.exists(file_path):
+        if file_path and os.path.exists(file_path):
             os.remove(file_path)
             return True
     except Exception as e:
         print(f"删除文件失败: {e}")
+    
     return False
 
-def get_audio_duration(file_path):
-    """获取音频文件时长（秒）"""
-    # 这里应该使用音频处理库如librosa或mutagen
-    # 目前返回模拟值
+def get_file_hash(file_path):
+    """计算文件的MD5哈希值"""
+    hash_md5 = hashlib.md5()
     try:
-        # 简单的文件大小估算（实际应用中应使用专业音频库）
-        file_size = os.path.getsize(file_path)
-        # 假设平均比特率为128kbps
-        estimated_duration = file_size / (128 * 1024 / 8)  # 秒
-        return round(estimated_duration, 2)
-    except:
+        with open(file_path, "rb") as f:
+            for chunk in iter(lambda: f.read(4096), b""):
+                hash_md5.update(chunk)
+        return hash_md5.hexdigest()
+    except Exception as e:
+        print(f"计算文件哈希失败: {e}")
         return None
 
-def validate_audio_file(file_path):
-    """验证音频文件完整性"""
-    if not os.path.exists(file_path):
-        return False, "文件不存在"
+def ensure_upload_directory():
+    """确保上传目录存在"""
+    upload_folder = current_app.config.get('UPLOAD_FOLDER', 'uploads')
     
-    # 检查文件大小
-    file_size = os.path.getsize(file_path)
-    if file_size == 0:
-        return False, "文件为空"
+    directories = [
+        upload_folder,
+        os.path.join(upload_folder, 'audio'),
+        os.path.join(upload_folder, 'avatars'),
+        os.path.join(upload_folder, 'temp')
+    ]
     
-    # 检查文件头（简单验证）
-    try:
-        with open(file_path, 'rb') as f:
-            header = f.read(4)
-            
-            # 检查常见音频格式的文件头
-            if header.startswith(b'ID3') or header.startswith(b'\xff\xfb'):
-                return True, "MP3文件"
-            elif header.startswith(b'RIFF'):
-                return True, "WAV文件"
-            elif header.startswith(b'fLaC'):
-                return True, "FLAC文件"
-            elif header.startswith(b'OggS'):
-                return True, "OGG文件"
-            else:
-                return False, "未知音频格式"
-                
-    except Exception as e:
-        return False, f"文件读取错误: {e}"
-
-def compress_audio(input_path, output_path, quality='medium'):
-    """压缩音频文件（占位符函数）"""
-    # 这里应该使用FFmpeg或其他音频处理工具
-    # 目前只是复制文件
-    try:
-        import shutil
-        shutil.copy2(input_path, output_path)
-        return True, "压缩完成"
-    except Exception as e:
-        return False, f"压缩失败: {e}"
+    for directory in directories:
+        if not os.path.exists(directory):
+            os.makedirs(directory)

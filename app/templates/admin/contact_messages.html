@@ -1,0 +1,295 @@
+{% extends "base.html" %}
+
+{% block title %}联系消息管理 - 管理后台 - AiMusPal{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <!-- 侧边栏 -->
+        <div class="col-md-3 col-lg-2 px-0">
+            <div class="bg-light sidebar py-3">
+                <div class="list-group list-group-flush">
+                    <a href="{{ url_for('admin.dashboard') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-tachometer-alt me-2"></i>仪表板
+                    </a>
+                    <a href="{{ url_for('admin.users') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-users me-2"></i>用户管理
+                    </a>
+                    <a href="{{ url_for('admin.practices') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-music me-2"></i>练习管理
+                    </a>
+                    <a href="{{ url_for('admin.practice_records') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-history me-2"></i>练习记录
+                    </a>
+                    <a href="{{ url_for('admin.contact_messages') }}" class="list-group-item list-group-item-action active">
+                        <i class="fas fa-envelope me-2"></i>联系消息
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 主内容区 -->
+        <div class="col-md-9 col-lg-10">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">
+                    <i class="fas fa-envelope text-primary"></i> 联系消息管理
+                </h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-group me-2">
+                        <a href="{{ url_for('admin.export_data', export_type='contacts') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-download"></i> 导出消息
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 搜索和筛选 -->
+            <form method="GET" id="search-form">
+                <div class="row mb-3">
+                    <div class="col-md-5">
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="搜索发件人、邮箱或主题..." 
+                                   name="search" id="search-input" value="{{ search }}">
+                            <button class="btn btn-outline-secondary" type="submit">
+                                <i class="fas fa-search"></i> 搜索
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" name="status" id="status-filter">
+                            <option value="">所有状态</option>
+                            <option value="unread" {% if status_filter == 'unread' %}selected{% endif %}>未读</option>
+                            <option value="read" {% if status_filter == 'read' %}selected{% endif %}>已读</option>
+                            <option value="replied" {% if status_filter == 'replied' %}selected{% endif %}>已回复</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-outline-primary">
+                                <i class="fas fa-filter"></i> 筛选
+                            </button>
+                            <a href="{{ url_for('admin.contact_messages') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-undo"></i> 重置
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            <!-- 消息列表 -->
+            <div class="card shadow">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th width="5%">ID</th>
+                                    <th width="15%">发件人</th>
+                                    <th width="20%">邮箱</th>
+                                    <th width="25%">主题</th>
+                                    <th width="10%">状态</th>
+                                    <th width="15%">发送时间</th>
+                                    <th width="10%">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if messages.items %}
+                                    {% for message in messages.items %}
+                                    <tr class="{% if message.status == 'unread' %}table-warning{% endif %}">
+                                        <td>{{ message.id }}</td>
+                                        <td>
+                                            <strong>{{ message.name }}</strong>
+                                            {% if message.status == 'unread' %}
+                                                <i class="fas fa-circle text-warning ms-1" title="未读"></i>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <small>{{ message.email }}</small>
+                                        </td>
+                                        <td>
+                                            <div>{{ message.subject }}</div>
+                                            <small class="text-muted">
+                                                {{ message.message[:50] }}{% if message.message|length > 50 %}...{% endif %}
+                                            </small>
+                                        </td>
+                                        <td>
+                                            {% if message.status == 'unread' %}
+                                                <span class="badge bg-warning">未读</span>
+                                            {% elif message.status == 'read' %}
+                                                <span class="badge bg-info">已读</span>
+                                            {% elif message.status == 'replied' %}
+                                                <span class="badge bg-success">已回复</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">{{ message.status }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <small>{{ message.created_at.strftime('%Y-%m-%d %H:%M') if message.created_at }}</small>
+                                            {% if message.replied_at %}
+                                                <br><small class="text-success">
+                                                    回复: {{ message.replied_at.strftime('%m-%d %H:%M') }}
+                                                </small>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <a href="{{ url_for('admin.contact_message_detail', message_id=message.id) }}" 
+                                                   class="btn btn-outline-primary" title="查看详情">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                {% if message.status != 'replied' %}
+                                                <a href="{{ url_for('admin.contact_message_detail', message_id=message.id) }}#reply" 
+                                                   class="btn btn-outline-success" title="回复">
+                                                    <i class="fas fa-reply"></i>
+                                                </a>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="7" class="text-center text-muted py-4">
+                                            <i class="fas fa-envelope-open fa-2x mb-2"></i><br>
+                                            {% if search or status_filter %}
+                                                没有找到符合条件的消息
+                                            {% else %}
+                                                暂无联系消息
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- 分页 -->
+                    {% if messages.pages > 1 %}
+                    <nav aria-label="联系消息分页">
+                        <ul class="pagination justify-content-center">
+                            {% if messages.has_prev %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('admin.contact_messages', page=messages.prev_num, search=search, status=status_filter) }}">上一页</a>
+                                </li>
+                            {% endif %}
+                            
+                            {% for page_num in messages.iter_pages() %}
+                                {% if page_num %}
+                                    {% if page_num != messages.page %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ url_for('admin.contact_messages', page=page_num, search=search, status=status_filter) }}">{{ page_num }}</a>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ page_num }}</span>
+                                        </li>
+                                    {% endif %}
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">…</span>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if messages.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('admin.contact_messages', page=messages.next_num, search=search, status=status_filter) }}">下一页</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- 快速统计 -->
+            <div class="row mt-4">
+                <div class="col-md-3">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body text-center">
+                            <i class="fas fa-envelope fa-2x mb-2"></i>
+                            <h4>{{ messages.total }}</h4>
+                            <small>总消息数</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-danger text-white">
+                        <div class="card-body text-center">
+                            <i class="fas fa-exclamation-circle fa-2x mb-2"></i>
+                            <h4 id="unread-count">-</h4>
+                            <small>未读消息</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body text-center">
+                            <i class="fas fa-eye fa-2x mb-2"></i>
+                            <h4 id="read-count">-</h4>
+                            <small>已读消息</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body text-center">
+                            <i class="fas fa-check-circle fa-2x mb-2"></i>
+                            <h4 id="replied-count">-</h4>
+                            <small>已回复</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.sidebar {
+    position: fixed;
+    top: 56px;
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    padding: 0;
+    box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+}
+
+.sidebar .list-group-item {
+    border-radius: 0;
+    border: none;
+    border-bottom: 1px solid rgba(0, 0, 0, .125);
+}
+
+.table-warning {
+    --bs-table-bg: #fff3cd;
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // 加载统计数据
+    loadStatistics();
+    
+    function loadStatistics() {
+        // 这里可以通过AJAX加载实时统计数据
+        // 简化版本：从当前页面计算
+        let unreadCount = $('.badge.bg-warning').length;
+        let readCount = $('.badge.bg-info').length;
+        let repliedCount = $('.badge.bg-success').length;
+        
+        $('#unread-count').text(unreadCount);
+        $('#read-count').text(readCount);
+        $('#replied-count').text(repliedCount);
+    }
+    
+    // 筛选器变化时自动提交
+    $('#status-filter').on('change', function() {
+        $('#search-form').submit();
+    });
+});
+</script>
+{% endblock %} 

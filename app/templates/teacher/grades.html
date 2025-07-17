@@ -1,0 +1,359 @@
+{% extends "base.html" %}
+
+{% block title %}成绩管理 - AiMusPal{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>成绩管理</h1>
+        <div class="d-flex gap-2">
+            <button class="btn btn-success" onclick="batchGrade()">
+                <i class="fas fa-edit"></i> 批量评分
+            </button>
+            <a href="{{ url_for('teacher.teacher_dashboard') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> 返回仪表板
+            </a>
+        </div>
+    </div>
+
+    <!-- 筛选选项 -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <select class="form-select" id="assignmentFilter">
+                <option value="">所有作业</option>
+                {% for assignment in assignments %}
+                <option value="{{ assignment.id }}">{{ assignment.title }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select class="form-select" id="classFilter">
+                <option value="">所有班级</option>
+                {% for class in classes %}
+                <option value="{{ class.id }}">{{ class.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select class="form-select" id="statusFilter">
+                <option value="">所有状态</option>
+                <option value="pending">待批改</option>
+                <option value="graded">已批改</option>
+                <option value="returned">已返回</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <div class="input-group">
+                <input type="text" class="form-control" id="searchInput" placeholder="搜索学生...">
+                <button class="btn btn-outline-secondary" type="button">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 待批改作业统计 -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center border-warning">
+                <div class="card-body">
+                    <i class="fas fa-hourglass-half fs-1 text-warning mb-2"></i>
+                    <h5>待批改</h5>
+                    <h2 class="text-warning">{{ pending_count or 0 }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center border-success">
+                <div class="card-body">
+                    <i class="fas fa-check-circle fs-1 text-success mb-2"></i>
+                    <h5>已批改</h5>
+                    <h2 class="text-success">{{ graded_count or 0 }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center border-info">
+                <div class="card-body">
+                    <i class="fas fa-star fs-1 text-info mb-2"></i>
+                    <h5>平均分</h5>
+                    <h2 class="text-info">{{ "%.1f"|format(average_score or 0) }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center border-primary">
+                <div class="card-body">
+                    <i class="fas fa-percentage fs-1 text-primary mb-2"></i>
+                    <h5>及格率</h5>
+                    <h2 class="text-primary">{{ "%.1f"|format(pass_rate or 0) }}%</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 成绩列表 -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">成绩列表</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>
+                                <input type="checkbox" id="selectAll" onchange="toggleSelectAll()">
+                            </th>
+                            <th>学生</th>
+                            <th>作业</th>
+                            <th>班级</th>
+                            <th>提交时间</th>
+                            <th>分数</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for grade in grades %}
+                        <tr>
+                            <td>
+                                <input type="checkbox" name="gradeSelect" value="{{ grade.id }}">
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    {% if grade.student.avatar %}
+                                        <img src="{{ url_for('static', filename='uploads/avatars/' + grade.student.avatar) }}" 
+                                             class="rounded-circle me-2" width="32" height="32" alt="头像">
+                                    {% else %}
+                                        <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-2" 
+                                             style="width: 32px; height: 32px;">
+                                            <span class="text-white small fw-bold">{{ grade.student.username[0].upper() }}</span>
+                                        </div>
+                                    {% endif %}
+                                    <div>
+                                        <strong>{{ grade.student.username }}</strong>
+                                        {% if grade.student.real_name %}
+                                            <br><small class="text-muted">{{ grade.student.real_name }}</small>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <strong>{{ grade.assignment.title if grade.assignment else '未知作业' }}</strong>
+                                <br>
+                                <small class="text-muted">满分: {{ grade.assignment.max_score if grade.assignment else 100 }}</small>
+                            </td>
+                            <td>
+                                {% if grade.assignment and grade.assignment.class %}
+                                    <span class="badge bg-info">{{ grade.assignment.class.name }}</span>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if grade.submitted_at %}
+                                    {{ grade.submitted_at.strftime('%m-%d %H:%M') }}
+                                {% else %}
+                                    <span class="text-muted">未提交</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if grade.score is not none %}
+                                    <span class="badge bg-{{ 'success' if grade.score >= 80 else 'warning' if grade.score >= 60 else 'danger' }} fs-6">
+                                        {{ grade.score }}
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if grade.status == 'pending' %}
+                                    <span class="badge bg-warning">待批改</span>
+                                {% elif grade.status == 'graded' %}
+                                    <span class="badge bg-success">已批改</span>
+                                {% elif grade.status == 'returned' %}
+                                    <span class="badge bg-info">已返回</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ grade.status or '未知' }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    {% if grade.status == 'pending' %}
+                                        <button class="btn btn-outline-primary" onclick="gradeSubmission({{ grade.id }})">
+                                            <i class="fas fa-edit"></i> 批改
+                                        </button>
+                                    {% else %}
+                                        <button class="btn btn-outline-secondary" onclick="viewGrade({{ grade.id }})">
+                                            <i class="fas fa-eye"></i> 查看
+                                        </button>
+                                        <button class="btn btn-outline-warning" onclick="editGrade({{ grade.id }})">
+                                            <i class="fas fa-edit"></i> 编辑
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="8" class="text-center py-4">
+                                <i class="fas fa-star fa-3x text-muted mb-3"></i>
+                                <p class="text-muted">暂无成绩记录</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 批改模态框 -->
+<div class="modal fade" id="gradeModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">批改作业</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="gradeScore" class="form-label">分数</label>
+                            <input type="number" class="form-control" id="gradeScore" min="0" max="100" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="gradeLevel" class="form-label">等级</label>
+                            <select class="form-select" id="gradeLevel">
+                                <option value="A">A - 优秀</option>
+                                <option value="B">B - 良好</option>
+                                <option value="C">C - 中等</option>
+                                <option value="D">D - 及格</option>
+                                <option value="F">F - 不及格</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="gradeComments" class="form-label">评语</label>
+                    <textarea class="form-control" id="gradeComments" rows="4" 
+                              placeholder="写下对学生表现的评价和建议..."></textarea>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="gradeFeedback" class="form-label">改进建议</label>
+                    <textarea class="form-control" id="gradeFeedback" rows="3" 
+                              placeholder="具体的技巧建议和练习方向..."></textarea>
+                </div>
+                
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="publishGrade">
+                    <label class="form-check-label" for="publishGrade">
+                        立即发布成绩给学生
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="saveGrade()">保存成绩</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentGradeId = null;
+
+function gradeSubmission(gradeId) {
+    currentGradeId = gradeId;
+    const modal = new bootstrap.Modal(document.getElementById('gradeModal'));
+    modal.show();
+}
+
+function viewGrade(gradeId) {
+    window.location.href = '/teacher/grade/' + gradeId;
+}
+
+function editGrade(gradeId) {
+    gradeSubmission(gradeId);
+}
+
+function saveGrade() {
+    if (!currentGradeId) return;
+    
+    const score = document.getElementById('gradeScore').value;
+    const level = document.getElementById('gradeLevel').value;
+    const comments = document.getElementById('gradeComments').value;
+    const feedback = document.getElementById('gradeFeedback').value;
+    const publish = document.getElementById('publishGrade').checked;
+    
+    if (!score) {
+        alert('请输入分数');
+        return;
+    }
+    
+    // 这里发送AJAX请求保存成绩
+    fetch('/teacher/grade/' + currentGradeId + '/save', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            score: score,
+            level: level,
+            comments: comments,
+            feedback: feedback,
+            publish: publish
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('保存失败: ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('保存失败: ' + error);
+    });
+}
+
+function toggleSelectAll() {
+    const selectAll = document.getElementById('selectAll');
+    const checkboxes = document.querySelectorAll('input[name="gradeSelect"]');
+    
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = selectAll.checked;
+    });
+}
+
+function batchGrade() {
+    const selected = document.querySelectorAll('input[name="gradeSelect"]:checked');
+    if (selected.length === 0) {
+        alert('请选择要批改的成绩');
+        return;
+    }
+    
+    alert('批量评分功能开发中...');
+}
+
+// 实时分数等级更新
+document.getElementById('gradeScore').addEventListener('input', function() {
+    const score = parseInt(this.value);
+    const levelSelect = document.getElementById('gradeLevel');
+    
+    if (score >= 90) levelSelect.value = 'A';
+    else if (score >= 80) levelSelect.value = 'B';
+    else if (score >= 70) levelSelect.value = 'C';
+    else if (score >= 60) levelSelect.value = 'D';
+    else levelSelect.value = 'F';
+});
+</script>
+{% endblock %} 

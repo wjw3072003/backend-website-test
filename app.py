@@ -1,6 +1,6 @@
 import os
 from app import create_app, db
-from app.models import User, Role, Practice, PracticeRecord, AudioFile
+from app.models import User, Role, Practice, PracticeRecord, AudioFile, PasswordResetToken, ContactMessage
 
 # 创建应用实例
 app = create_app(os.environ.get('FLASK_ENV', 'development'))
@@ -14,7 +14,9 @@ def make_shell_context():
         'Role': Role,
         'Practice': Practice,
         'PracticeRecord': PracticeRecord,
-        'AudioFile': AudioFile
+        'AudioFile': AudioFile,
+        'PasswordResetToken': PasswordResetToken,
+        'ContactMessage': ContactMessage
     }
 
 @app.cli.command()
