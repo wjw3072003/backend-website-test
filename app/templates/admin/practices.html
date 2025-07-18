@@ -12,9 +12,11 @@
                     <a href="{{ url_for('admin.dashboard') }}" class="list-group-item list-group-item-action">
                         <i class="fas fa-tachometer-alt me-2"></i>仪表板
                     </a>
+                    {% if current_user.has_role('admin') %}
                     <a href="{{ url_for('admin.users') }}" class="list-group-item list-group-item-action">
                         <i class="fas fa-users me-2"></i>用户管理
                     </a>
+                    {% endif %}
                     <a href="{{ url_for('admin.practices') }}" class="list-group-item list-group-item-action active">
                         <i class="fas fa-music me-2"></i>练习管理
                     </a>

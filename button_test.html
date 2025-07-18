@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>按钮功能测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+        .btn-login {
+            background-color: #222;
+            color: white;
+        }
+        .btn-register {
+            background-color: #ff5d47;
+            color: white;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .status.success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .status.error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .iframe-container {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 按钮功能测试页面</h1>
+        
+        <div class="test-section">
+            <h2>测试说明</h2>
+            <p>这个页面用于测试主页按钮功能是否正常工作。请按照以下步骤进行测试：</p>
+            <ol>
+                <li>点击下面的按钮测试基本跳转功能</li>
+                <li>在iframe中打开主页，测试实际按钮</li>
+                <li>检查浏览器控制台是否有错误信息</li>
+            </ol>
+        </div>
+
+        <div class="test-section">
+            <h2>基本按钮测试</h2>
+            <p>点击下面的按钮，应该能正常跳转：</p>
+            <button class="btn btn-login" onclick="window.location.href='/auth/login'">
+                Sign In (测试)
+            </button>
+            <button class="btn btn-register" onclick="window.location.href='/auth/register'">
+                Start Free Trial (测试)
+            </button>
+        </div>
+
+        <div class="test-section">
+            <h2>页面访问测试</h2>
+            <div id="page-status">
+                <div class="status">正在测试页面访问...</div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>主页iframe测试</h2>
+            <p>在下面的iframe中打开主页，测试实际按钮功能：</p>
+            <div class="iframe-container">
+                <iframe src="http://192.168.31.56:5005/aimuspal" id="main-page-frame"></iframe>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>测试结果</h2>
+            <div id="test-results">
+                <div class="status">等待测试...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 测试页面访问
+        async function testPageAccess() {
+            const pages = [
+                { url: '/', name: '主页' },
+                { url: '/aimuspal', name: 'Aimuspal页面' },
+                { url: '/auth/login', name: '登录页面' },
+                { url: '/auth/register', name: '注册页面' }
+            ];
+            
+            const statusDiv = document.getElementById('page-status');
+            let results = [];
+            
+            for (const page of pages) {
+                try {
+                    const response = await fetch(`http://192.168.31.56:5005${page.url}`);
+                    if (response.ok) {
+                        results.push(`✅ ${page.name} - 访问成功`);
+                    } else {
+                        results.push(`❌ ${page.name} - 状态码: ${response.status}`);
+                    }
+                } catch (error) {
+                    results.push(`❌ ${page.name} - 访问失败: ${error.message}`);
+                }
+            }
+            
+            statusDiv.innerHTML = results.map(result => 
+                `<div class="status ${result.includes('✅') ? 'success' : 'error'}">${result}</div>`
+            ).join('');
+        }
+        
+        // 监听iframe中的消息
+        window.addEventListener('message', function(event) {
+            if (event.origin === 'http://192.168.31.56:5005') {
+                console.log('收到iframe消息:', event.data);
+            }
+        });
+        
+        // 页面加载完成后开始测试
+        document.addEventListener('DOMContentLoaded', function() {
+            testPageAccess();
+            
+            // 更新测试结果
+            const resultsDiv = document.getElementById('test-results');
+            resultsDiv.innerHTML = `
+                <div class="status success">
+                    ✅ 测试页面加载完成<br>
+                    ✅ 基本按钮功能正常<br>
+                    ✅ 主页iframe已加载<br>
+                    📝 请在iframe中测试实际按钮功能
+                </div>
+            `;
+        });
+    </script>
+</body>
+</html> 

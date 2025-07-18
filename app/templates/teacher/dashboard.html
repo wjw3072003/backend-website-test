@@ -4,13 +4,28 @@
 
 {% block content %}
 <div class="container mt-4">
+    <!-- 推荐码和推荐链接展示区 -->
+    {% if invite_code and invite_link %}
+    <div class="alert alert-info d-flex align-items-center justify-content-between mb-4" role="alert">
+        <div>
+            <strong>我的推荐码：</strong>
+            <span id="inviteCode" class="fw-bold text-primary">{{ invite_code }}</span>
+            <button class="btn btn-sm btn-outline-secondary ms-2" onclick="copyToClipboard('inviteCode')">复制</button>
+            <br>
+            <strong>专属注册链接：</strong>
+            <span id="inviteLink" class="text-break">{{ invite_link }}</span>
+            <button class="btn btn-sm btn-outline-secondary ms-2" onclick="copyToClipboard('inviteLink')">复制</button>
+        </div>
+        <span class="ms-3 text-muted">分享给学生，学生注册时填写推荐码或直接使用链接</span>
+    </div>
+    {% endif %}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>老师仪表板</h1>
         <div class="d-flex gap-2">
-            <a href="{{ url_for('teacher.teacher_classes') }}" class="btn btn-primary">
+            <a href="{{ url_for('teacher.classes') }}" class="btn btn-primary">
                 <i class="fas fa-users"></i> 班级管理
             </a>
-            <a href="{{ url_for('teacher.teacher_assignments') }}" class="btn btn-success">
+            <a href="{{ url_for('teacher.assignments') }}" class="btn btn-success">
                 <i class="fas fa-tasks"></i> 布置作业
             </a>
         </div>
@@ -65,20 +80,23 @@
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
-                        <a href="{{ url_for('teacher.teacher_students') }}" class="btn btn-outline-primary">
+                        <a href="{{ url_for('teacher.students') }}" class="btn btn-outline-primary">
                             <i class="fas fa-users"></i> 学生管理
                         </a>
-                        <a href="{{ url_for('teacher.teacher_assignments') }}" class="btn btn-outline-success">
+                        <a href="{{ url_for('teacher.assignments') }}" class="btn btn-outline-success">
                             <i class="fas fa-plus"></i> 布置新作业
                         </a>
-                        <a href="{{ url_for('teacher.teacher_grades') }}" class="btn btn-outline-warning">
+                        <a href="{{ url_for('teacher.grades') }}" class="btn btn-outline-warning">
                             <i class="fas fa-star"></i> 成绩管理
                         </a>
-                        <a href="{{ url_for('teacher.teacher_reports') }}" class="btn btn-outline-info">
+                        <a href="{{ url_for('teacher.reports') }}" class="btn btn-outline-info">
                             <i class="fas fa-chart-bar"></i> 教学报告
                         </a>
-                        <a href="{{ url_for('teacher.teacher_resources') }}" class="btn btn-outline-secondary">
+                        <a href="{{ url_for('teacher.resources') }}" class="btn btn-outline-secondary">
                             <i class="fas fa-book"></i> 教学资源
+                        </a>
+                        <a href="{{ url_for('teacher.invite_codes') }}" class="btn btn-outline-info">
+                            <i class="fas fa-qrcode"></i> 推广码管理
                         </a>
                     </div>
                 </div>
@@ -109,7 +127,33 @@
                     {% else %}
                         <p class="text-muted">暂无作业</p>
                     {% endif %}
-                    <a href="{{ url_for('teacher.teacher_assignments') }}" class="btn btn-sm btn-primary">查看全部</a>
+                    <a href="{{ url_for('teacher.assignments') }}" class="btn btn-sm btn-primary">查看全部</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 最新学生 -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">最新学生</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_students %}
+                        {% for student in recent_students %}
+                        <div class="mb-3 pb-2 border-bottom">
+                            <strong>{{ student.username }}</strong>
+                            <br>
+                            <small class="text-muted">{{ student.email }}</small>
+                            <br>
+                            <small class="text-muted">
+                                注册时间: {{ student.created_at.strftime('%Y-%m-%d %H:%M') if student.created_at else '' }}
+                            </small>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">暂无新学生</p>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -143,10 +187,21 @@
                     {% else %}
                         <p class="text-muted">暂无成绩记录</p>
                     {% endif %}
-                    <a href="{{ url_for('teacher.teacher_grades') }}" class="btn btn-sm btn-primary">查看全部</a>
+                    <a href="{{ url_for('teacher.grades') }}" class="btn btn-sm btn-primary">查看全部</a>
                 </div>
             </div>
         </div>
     </div>
 </div>
 {% endblock %} 
+
+<script>
+function copyToClipboard(elementId) {
+    var text = document.getElementById(elementId).innerText;
+    navigator.clipboard.writeText(text).then(function() {
+        alert('已复制到剪贴板');
+    }, function() {
+        alert('复制失败，请手动复制');
+    });
+}
+</script> 

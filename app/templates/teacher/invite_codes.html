@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+
+{% block title %}推广码管理 - AiMusPal{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>推广码管理</h1>
+        <a href="{{ url_for('teacher.dashboard') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> 返回仪表板
+        </a>
+    </div>
+
+    {% if invite_code %}
+    <!-- 推广码信息卡片 -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-qrcode"></i> 我的推广码
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">推广码：</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control form-control-lg fw-bold text-primary" 
+                                   value="{{ invite_code }}" id="inviteCode" readonly>
+                            <button class="btn btn-outline-primary" type="button" onclick="copyToClipboard('inviteCode')">
+                                <i class="fas fa-copy"></i> 复制
+                            </button>
+                        </div>
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>使用说明：</strong>学生注册时填写此推广码，即可自动关联到您的账户下。
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card border-success">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-link"></i> 专属注册链接
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">注册链接：</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" value="{{ invite_link }}" id="inviteLink" readonly>
+                            <button class="btn btn-outline-success" type="button" onclick="copyToClipboard('inviteLink')">
+                                <i class="fas fa-copy"></i> 复制
+                            </button>
+                        </div>
+                    </div>
+                    <div class="alert alert-success">
+                        <i class="fas fa-share-alt"></i>
+                        <strong>分享方式：</strong>将此链接发送给学生，学生点击即可直接注册并关联到您的账户。
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 统计信息 -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-user-graduate fs-1 text-primary"></i>
+                    <h5 class="card-title mt-2">已注册学生</h5>
+                    <h3 class="text-primary">{{ student_count }}</h3>
+                    <p class="text-muted">通过推广码注册的学生总数</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-chart-line fs-1 text-success"></i>
+                    <h5 class="card-title mt-2">推广效果</h5>
+                    <h3 class="text-success">{{ "优秀" if student_count > 10 else "良好" if student_count > 5 else "一般" }}</h3>
+                    <p class="text-muted">基于学生数量的评估</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-calendar-alt fs-1 text-info"></i>
+                    <h5 class="card-title mt-2">最近注册</h5>
+                    <h3 class="text-info">{{ recent_students|length }}</h3>
+                    <p class="text-muted">最近注册的学生数量</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 最近注册的学生列表 -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-users"></i> 最近注册的学生
+            </h5>
+        </div>
+        <div class="card-body">
+            {% if recent_students %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>用户名</th>
+                            <th>邮箱</th>
+                            <th>注册时间</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in recent_students %}
+                        <tr>
+                            <td>
+                                <strong>{{ student.username }}</strong>
+                                {% if student.first_name or student.last_name %}
+                                <br><small class="text-muted">{{ student.first_name }} {{ student.last_name }}</small>
+                                {% endif %}
+                            </td>
+                            <td>{{ student.email }}</td>
+                            <td>{{ student.created_at.strftime('%Y-%m-%d %H:%M') if student.created_at else '未知' }}</td>
+                            <td>
+                                {% if student.is_active %}
+                                <span class="badge bg-success">活跃</span>
+                                {% else %}
+                                <span class="badge bg-secondary">非活跃</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('teacher.student_detail', student_id=student.id) }}" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i> 查看
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">暂无学生注册</h5>
+                <p class="text-muted">分享您的推广码或注册链接，吸引更多学生加入！</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 推广建议 -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-lightbulb"></i> 推广建议
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6><i class="fas fa-share-alt text-primary"></i> 分享方式</h6>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success"></i> 微信朋友圈分享注册链接</li>
+                        <li><i class="fas fa-check text-success"></i> 微信群发送推广码</li>
+                        <li><i class="fas fa-check text-success"></i> QQ群分享专属链接</li>
+                        <li><i class="fas fa-check text-success"></i> 邮件发送给学生家长</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6><i class="fas fa-trophy text-warning"></i> 推广技巧</h6>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-star text-warning"></i> 强调专属教学服务</li>
+                        <li><i class="fas fa-star text-warning"></i> 展示教学成果案例</li>
+                        <li><i class="fas fa-star text-warning"></i> 提供免费试听机会</li>
+                        <li><i class="fas fa-star text-warning"></i> 设置推荐奖励机制</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <!-- 没有推广码的情况 -->
+    <div class="text-center py-5">
+        <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+        <h3 class="text-warning">未找到推广码</h3>
+        <p class="text-muted">您的账户可能还没有生成推广码，请联系管理员。</p>
+        <a href="{{ url_for('teacher.dashboard') }}" class="btn btn-primary">
+            <i class="fas fa-arrow-left"></i> 返回仪表板
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function copyToClipboard(elementId) {
+    var text = document.getElementById(elementId).value;
+    navigator.clipboard.writeText(text).then(function() {
+        // 显示成功提示
+        var button = event.target;
+        var originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-check"></i> 已复制';
+        button.classList.remove('btn-outline-primary', 'btn-outline-success');
+        button.classList.add('btn-success');
+        
+        setTimeout(function() {
+            button.innerHTML = originalText;
+            button.classList.remove('btn-success');
+            if (elementId === 'inviteCode') {
+                button.classList.add('btn-outline-primary');
+            } else {
+                button.classList.add('btn-outline-success');
+            }
+        }, 2000);
+    }, function() {
+        alert('复制失败，请手动复制');
+    });
+}
+</script>
+{% endblock %} 

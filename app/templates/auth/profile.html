@@ -51,6 +51,21 @@
         </div>
         
         <div class="col-md-8">
+            {% if teacher %}
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5>所属老师信息</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>姓名：</strong> {{ teacher.first_name }} {{ teacher.last_name }}</p>
+                    <p><strong>邮箱：</strong> {{ teacher.email }}</p>
+                    {% if teacher.phone %}
+                    <p><strong>联系方式：</strong> {{ teacher.phone }}</p>
+                    {% endif %}
+                    <p><strong>用户名：</strong> {{ teacher.username }}</p>
+                </div>
+            </div>
+            {% endif %}
             <div class="card">
                 <div class="card-header">
                     <h5>编辑个人资料</h5>

@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}学生详情 - {{ student.username }} - AiMusPal{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>学生详情</h1>
+        <div>
+            <a href="{{ url_for('teacher.students') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> 返回学生列表
+            </a>
+        </div>
+    </div>
+
+    <!-- 学生基本信息 -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-user"></i> 基本信息
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>用户名：</strong>{{ student.username }}</p>
+                            <p><strong>邮箱：</strong>{{ student.email }}</p>
+                            <p><strong>注册时间：</strong>{{ student.created_at.strftime('%Y-%m-%d %H:%M') if student.created_at else '未知' }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>姓名：</strong>{{ student.first_name }} {{ student.last_name or '未设置' }}</p>
+                            <p><strong>电话：</strong>{{ student.phone or '未设置' }}</p>
+                            <p><strong>状态：</strong>
+                                {% if student.is_active %}
+                                <span class="badge bg-success">活跃</span>
+                                {% else %}
+                                <span class="badge bg-secondary">非活跃</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-bar"></i> 学习统计
+                    </h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="row">
+                        <div class="col-6">
+                            <h4 class="text-primary">{{ total_practices }}</h4>
+                            <small class="text-muted">练习次数</small>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-success">{{ total_assignments }}</h4>
+                            <small class="text-muted">作业数量</small>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-12">
+                            <h4 class="text-warning">{{ avg_score }}</h4>
+                            <small class="text-muted">平均分数</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 最近练习记录 -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-music"></i> 最近练习记录
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if practice_records %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>练习曲目</th>
+                                    <th>分数</th>
+                                    <th>时间</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in practice_records %}
+                                <tr>
+                                    <td>{{ record.practice.title if record.practice else '未知曲目' }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if record.score >= 80 else 'warning' if record.score >= 60 else 'danger' }}">
+                                            {{ record.score }}分
+                                        </span>
+                                    </td>
+                                    <td>{{ record.created_at.strftime('%m-%d %H:%M') if record.created_at else '未知' }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-3">
+                        <i class="fas fa-music fa-2x text-muted mb-2"></i>
+                        <p class="text-muted">暂无练习记录</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-star"></i> 最近作业成绩
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if grades %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>作业</th>
+                                    <th>分数</th>
+                                    <th>状态</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for grade in grades %}
+                                <tr>
+                                    <td>{{ grade.assignment.title if grade.assignment else '未知作业' }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if grade.score >= 80 else 'warning' if grade.score >= 60 else 'danger' }}">
+                                            {{ grade.score }}分
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if grade.status == 'graded' %}
+                                        <span class="badge bg-success">已批改</span>
+                                        {% elif grade.status == 'pending' %}
+                                        <span class="badge bg-warning">待批改</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">{{ grade.status }}</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-3">
+                        <i class="fas fa-star fa-2x text-muted mb-2"></i>
+                        <p class="text-muted">暂无作业成绩</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 操作按钮 -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-cogs"></i> 操作
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('teacher.assignments') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> 布置作业
+                </a>
+                <a href="{{ url_for('teacher.grades') }}" class="btn btn-warning">
+                    <i class="fas fa-star"></i> 批改作业
+                </a>
+                <a href="{{ url_for('admin.practice_records') }}?user_id={{ student.id }}" class="btn btn-info">
+                    <i class="fas fa-music"></i> 查看练习记录
+                </a>
+                <button class="btn btn-outline-secondary" onclick="history.back()">
+                    <i class="fas fa-arrow-left"></i> 返回
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

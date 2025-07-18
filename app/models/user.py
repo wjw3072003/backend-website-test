@@ -47,6 +47,10 @@ class User(UserMixin, db.Model):
     roles = db.relationship('Role', secondary=user_roles, lazy='subquery',
                           backref=db.backref('users', lazy=True))
     
+    # 新增：学生所属老师
+    teacher_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    teacher = db.relationship('User', remote_side=[id], backref='students')
+    
     # 反向关系
     practice_records = db.relationship('PracticeRecord', backref='user', lazy=True, cascade='all, delete-orphan')
     
@@ -105,3 +109,15 @@ class User(UserMixin, db.Model):
     
     def __repr__(self):
         return f'<User {self.username}>'
+
+class TeacherInviteCode(db.Model):
+    """老师推荐码表"""
+    id = db.Column(db.Integer, primary_key=True)
+    teacher_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, unique=True)
+    code = db.Column(db.String(32), unique=True, nullable=False, index=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    teacher = db.relationship('User', backref=db.backref('invite_code', uselist=False))
+
+    def __repr__(self):
+        return f'<TeacherInviteCode teacher_id={self.teacher_id} code={self.code}>'

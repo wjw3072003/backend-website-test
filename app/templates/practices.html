@@ -1,19 +1,19 @@
 {% extends "base.html" %}
 
-{% block title %}练习曲目 - AiMusPal{% endblock %}
+{% block title %}{{ _('练习曲目') }} - AiMusPal{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
     <!-- 页面标题和统计 -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h1>练习曲目</h1>
+            <h1>{{ _('练习曲目') }}</h1>
             <p class="text-muted mb-0">
-                共 {{ total_practices }} 首曲目 | 您已练习 {{ user_practice_count }} 次
+                {{ _('共') }} {{ total_practices }} {{ _('首曲目') }} | {{ _('您已练习') }} {{ user_practice_count }} {{ _('次') }}
             </p>
         </div>
         <a href="{{ url_for('main.practice_records') }}" class="btn btn-outline-primary">
-            <i class="fas fa-history"></i> 我的记录
+            <i class="fas fa-history"></i> {{ _('我的记录') }}
         </a>
     </div>
     
@@ -28,7 +28,7 @@
                                placeholder="搜索曲目标题、作曲家或描述..." 
                                value="{{ current_filters.search }}">
                         <button class="btn btn-primary" type="submit">
-                            <i class="fas fa-search"></i> 搜索
+                            <i class="fas fa-search"></i> {{ _('搜索') }}
                         </button>
                     </div>
                 </div>
@@ -36,19 +36,19 @@
                 <!-- 排序 -->
                 <div class="col-md-2">
                     <select class="form-select" name="sort" onchange="this.form.submit()">
-                        <option value="title" {% if current_filters.sort == 'title' %}selected{% endif %}>按标题</option>
-                        <option value="difficulty" {% if current_filters.sort == 'difficulty' %}selected{% endif %}>按难度</option>
-                        <option value="created_at" {% if current_filters.sort == 'created_at' %}selected{% endif %}>最新添加</option>
+                        <option value="title" {% if current_filters.sort == 'title' %}selected{% endif %}>{{ _('按标题') }}</option>
+                        <option value="difficulty" {% if current_filters.sort == 'difficulty' %}selected{% endif %}>{{ _('按难度') }}</option>
+                        <option value="created_at" {% if current_filters.sort == 'created_at' %}selected{% endif %}>{{ _('最新添加') }}</option>
                     </select>
                 </div>
                 
                 <!-- 难度筛选 -->
                 <div class="col-md-2">
                     <select class="form-select" name="difficulty" onchange="this.form.submit()">
-                        <option value="">所有难度</option>
+                        <option value="">{{ _('所有难度') }}</option>
                         {% for level in difficulty_levels %}
                             <option value="{{ level }}" {% if current_filters.difficulty == level %}selected{% endif %}>
-                                难度 {{ level }}
+                                {{ _('难度') }} {{ level }}
                             </option>
                         {% endfor %}
                     </select>
@@ -57,7 +57,7 @@
                 <!-- 风格筛选 -->
                 <div class="col-md-2">
                     <select class="form-select" name="genre" onchange="this.form.submit()">
-                        <option value="">所有风格</option>
+                        <option value="">{{ _('所有风格') }}</option>
                         {% for genre_option in genres %}
                             <option value="{{ genre_option }}" {% if current_filters.genre == genre_option %}selected{% endif %}>
                                 {{ genre_option }}
@@ -70,7 +70,7 @@
                 {% if current_filters.search or current_filters.difficulty or current_filters.genre or current_filters.composer %}
                 <div class="col-12">
                     <a href="{{ url_for('main.practices') }}" class="btn btn-outline-secondary">
-                        <i class="fas fa-times"></i> 清除所有筛选
+                        <i class="fas fa-times"></i> {{ _('清除所有筛选') }}
                     </a>
                 </div>
                 {% endif %}
@@ -89,9 +89,9 @@
                         <h5 class="card-title">{{ practice.title }}</h5>
                         <p class="card-text">
                             {% if practice.composer %}
-                                <strong>作曲家:</strong> {{ practice.composer }}<br>
+                                <strong>{{ _('作曲家') }}:</strong> {{ practice.composer }}<br>
                             {% endif %}
-                            <strong>难度:</strong> 
+                            <strong>{{ _('难度') }}:</strong> 
                             {% for i in range(practice.difficulty_level) %}
                                 <i class="fas fa-star text-warning"></i>
                             {% endfor %}
@@ -101,7 +101,7 @@
                             ({{ practice.difficulty_level }}/10)
                             <br>
                             {% if practice.genre %}
-                                <strong>风格:</strong> {{ practice.genre }}<br>
+                                <strong>{{ _('风格') }}:</strong> {{ practice.genre }}<br>
                             {% endif %}
                         </p>
                         {% if practice.description %}
@@ -113,9 +113,9 @@
                             {% set stats = user_stats[practice.id] %}
                             <div class="small text-info mb-2">
                                 <i class="fas fa-chart-line"></i> 
-                                已练习 {{ stats.attempts }} 次
+                                {{ _('已练习') }} {{ stats.attempts }} {{ _('次') }}
                                 {% if stats.best_score %}
-                                    | 最佳: {{ stats.best_score }}分
+                                    | {{ _('最佳') }}: {{ stats.best_score }}{{ _('分') }}
                                 {% endif %}
                             </div>
                         {% endif %}
@@ -124,11 +124,11 @@
                         <div class="d-grid gap-2">
                             <a href="{{ url_for('main.practice_upload', practice_id=practice.id) }}" 
                                class="btn btn-primary">
-                                <i class="fas fa-microphone"></i> 开始练习
+                                <i class="fas fa-microphone"></i> {{ _('开始练习') }}
                             </a>
                             <a href="{{ url_for('main.practice_detail', practice_id=practice.id) }}" 
                                class="btn btn-outline-secondary btn-sm">
-                                <i class="fas fa-info-circle"></i> 查看详情
+                                <i class="fas fa-info-circle"></i> {{ _('查看详情') }}
                             </a>
                         </div>
                     </div>
@@ -145,7 +145,7 @@
                 {% if practices.has_prev %}
                     <li class="page-item">
                         <a class="page-link" href="{{ url_for('main.practices', page=practices.prev_num, **current_filters) }}">
-                            <i class="fas fa-chevron-left"></i> 上一页
+                            <i class="fas fa-chevron-left"></i> {{ _('上一页') }}
                         </a>
                     </li>
                 {% endif %}
@@ -173,7 +173,7 @@
                 {% if practices.has_next %}
                     <li class="page-item">
                         <a class="page-link" href="{{ url_for('main.practices', page=practices.next_num, **current_filters) }}">
-                            下一页 <i class="fas fa-chevron-right"></i>
+                            {{ _('下一页') }} <i class="fas fa-chevron-right"></i>
                         </a>
                     </li>
                 {% endif %}
@@ -185,16 +185,16 @@
         <!-- 无结果状态 -->
         <div class="text-center py-5">
             <i class="fas fa-search fa-4x text-muted mb-3"></i>
-            <h4>未找到匹配的练习曲目</h4>
+            <h4>{{ _('未找到匹配的练习曲目') }}</h4>
             {% if current_filters.search or current_filters.difficulty or current_filters.genre %}
                 <p class="text-muted mb-3">
-                    没有找到符合当前筛选条件的曲目，试试调整搜索条件
+                    {{ _('没有找到符合当前筛选条件的曲目，试试调整搜索条件') }}
                 </p>
                 <a href="{{ url_for('main.practices') }}" class="btn btn-outline-primary">
-                    <i class="fas fa-times"></i> 清除筛选条件
+                    <i class="fas fa-times"></i> {{ _('清除筛选条件') }}
                 </a>
             {% else %}
-                <p class="text-muted mb-3">管理员还未添加练习曲目，请稍后再来查看。</p>
+                <p class="text-muted mb-3">{{ _('管理员还未添加练习曲目，请稍后再来查看。') }}</p>
             {% endif %}
         </div>
     {% endif %}

@@ -5,12 +5,17 @@ import uuid
 from datetime import datetime
 
 from app import db
-from app.models.user import User, Role
+from app.models.user import User, Role, TeacherInviteCode
 from app.models.auth import PasswordResetToken
 from app.utils.email import send_verification_email, send_password_reset_email
 from app.utils.decorators import roles_required
+import random, string
 
 auth = Blueprint('auth', __name__)
+
+def generate_invite_code(length=8):
+    chars = string.ascii_uppercase + string.digits
+    return ''.join(random.choices(chars, k=length))
 
 @auth.route('/register', methods=['GET', 'POST'])
 def register():
@@ -22,6 +27,8 @@ def register():
         username = data.get('username', '').strip()
         password = data.get('password', '')
         user_type = data.get('user_type', 'student')  # student or teacher
+        recommender_code = data.get('recommender_code', '').strip() or data.get('invite', '').strip()
+        has_recommender = data.get('has_recommender', 'yes')
         
         # 验证输入
         if not email or not username or not password:
@@ -47,44 +54,82 @@ def register():
             return render_template('auth/register.html')
         
         try:
+            teacher_id = None
+            if user_type == 'student':
+                if recommender_code:
+                    # 校验推荐码
+                    invite = TeacherInviteCode.query.filter_by(code=recommender_code).first()
+                    if not invite:
+                        message = '推荐码无效或老师不存在'
+                        if request.is_json:
+                            return jsonify({'error': message}), 400
+                        flash(message, 'error')
+                        return render_template('auth/register.html')
+                    teacher_id = invite.teacher_id
+                else:
+                    # 绑定统一老师（如无则自动创建）
+                    default_teacher = User.query.filter_by(username='default_teacher').join(User.roles).filter(Role.name=='teacher').first()
+                    if not default_teacher:
+                        default_teacher = User(
+                            email='default_teacher@example.com',
+                            username='default_teacher',
+                            password='default_teacher_password',
+                            is_verified=True
+                        )
+                        teacher_role = Role.query.filter_by(name='teacher').first()
+                        if teacher_role:
+                            default_teacher.add_role(teacher_role)
+                        db.session.add(default_teacher)
+                        db.session.flush()
+                    teacher_id = default_teacher.id
             # 创建新用户
             user = User(
                 email=email,
                 username=username,
                 password=password,
-                verification_token=str(uuid.uuid4())
+                verification_token=str(uuid.uuid4()),
+                teacher_id=teacher_id
             )
-            
             # 分配角色
             if user_type == 'teacher':
                 role = Role.query.filter_by(name='teacher').first()
             else:
                 role = Role.query.filter_by(name='student').first()
-            
             if role:
                 user.add_role(role)
-            
             db.session.add(user)
+            db.session.flush()
+            # 老师注册后自动生成推荐码
+            if user_type == 'teacher':
+                # 保证唯一性
+                code = generate_invite_code()
+                while TeacherInviteCode.query.filter_by(code=code).first():
+                    code = generate_invite_code()
+                invite = TeacherInviteCode(teacher_id=user.id, code=code)
+                db.session.add(invite)
             db.session.commit()
-            
             # 发送验证邮件
-            send_verification_email(user)
-            
+            # send_verification_email(user, user.verification_token)
             message = '注册成功！请查看邮箱完成验证。'
             if request.is_json:
                 return jsonify({'message': message, 'user_id': user.id}), 201
-            
             flash(message, 'success')
             return redirect(url_for('auth.login'))
-            
         except Exception as e:
             db.session.rollback()
+            import traceback
+            print('注册异常:', e)
+            traceback.print_exc()
+            from flask import current_app
+            current_app.logger.error(f'注册异常: {e}')
             message = '注册失败，请稍后重试'
             if request.is_json:
                 return jsonify({'error': message}), 500
             flash(message, 'error')
     
-    return render_template('auth/register.html')
+    # GET请求，支持带invite参数
+    invite_code = request.args.get('invite', '')
+    return render_template('auth/register.html', invite_code=invite_code)
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
@@ -159,7 +204,10 @@ def verify_email(token):
 @login_required
 def profile():
     """用户个人资料"""
-    return render_template('auth/profile.html', user=current_user)
+    teacher = None
+    if current_user.has_role('student') and current_user.teacher_id:
+        teacher = User.query.get(current_user.teacher_id)
+    return render_template('auth/profile.html', user=current_user, teacher=teacher)
 
 @auth.route('/profile', methods=['POST'])
 @login_required

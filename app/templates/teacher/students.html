@@ -10,7 +10,7 @@
             <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addStudentModal">
                 <i class="fas fa-plus"></i> 添加学生
             </button>
-            <a href="{{ url_for('teacher.teacher_dashboard') }}" class="btn btn-outline-secondary">
+            <a href="{{ url_for('teacher.dashboard') }}" class="btn btn-outline-secondary">
                 <i class="fas fa-arrow-left"></i> 返回仪表板
             </a>
         </div>
@@ -65,46 +65,46 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for student in students %}
+                        {% for item in students %}
                         <tr>
                             <td>
-                                {% if student.avatar %}
-                                    <img src="{{ url_for('static', filename='uploads/avatars/' + student.avatar) }}" 
+                                {% if item.student.avatar %}
+                                    <img src="{{ url_for('static', filename='uploads/avatars/' + item.student.avatar) }}" 
                                          class="rounded-circle" width="40" height="40" alt="头像">
                                 {% else %}
                                     <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" 
                                          style="width: 40px; height: 40px;">
-                                        <span class="text-white fw-bold">{{ student.username[0].upper() }}</span>
+                                        <span class="text-white fw-bold">{{ item.student.username[0].upper() }}</span>
                                     </div>
                                 {% endif %}
                             </td>
                             <td>
-                                <strong>{{ student.username }}</strong>
-                                {% if student.real_name %}
-                                    <br><small class="text-muted">{{ student.real_name }}</small>
+                                <strong>{{ item.student.username }}</strong>
+                                {% if item.student.real_name %}
+                                    <br><small class="text-muted">{{ item.student.real_name }}</small>
                                 {% endif %}
                             </td>
-                            <td>{{ student.username }}</td>
-                            <td>{{ student.email }}</td>
+                            <td>{{ item.student.username }}</td>
+                            <td>{{ item.student.email }}</td>
                             <td>
-                                {% for class in student.classes %}
+                                {% for class in item.student.classes %}
                                     <span class="badge bg-info me-1">{{ class.name }}</span>
                                 {% else %}
                                     <span class="text-muted">未分配班级</span>
                                 {% endfor %}
                             </td>
                             <td>
-                                <span class="badge bg-success">{{ student.practice_records|length if student.practice_records else 0 }}</span>
+                                <span class="badge bg-success">{{ item.student.practice_records|length if item.student.practice_records else 0 }}</span>
                             </td>
                             <td>
-                                {% if student.last_login %}
-                                    {{ student.last_login.strftime('%Y-%m-%d %H:%M') }}
+                                {% if item.student.last_login %}
+                                    {{ item.student.last_login.strftime('%Y-%m-%d %H:%M') }}
                                 {% else %}
                                     <span class="text-muted">从未登录</span>
                                 {% endif %}
                             </td>
                             <td>
-                                {% if student.is_active %}
+                                {% if item.student.is_active %}
                                     <span class="badge bg-success">活跃</span>
                                 {% else %}
                                     <span class="badge bg-secondary">非活跃</span>
@@ -117,16 +117,16 @@
                                         操作
                                     </button>
                                     <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="#" onclick="viewStudent({{ student.id }})">
+                                        <li><a class="dropdown-item" href="#" onclick="viewStudent({{ item.student.id }})">
                                             <i class="fas fa-eye"></i> 查看详情</a></li>
-                                        <li><a class="dropdown-item" href="#" onclick="editStudent({{ student.id }})">
+                                        <li><a class="dropdown-item" href="#" onclick="editStudent({{ item.student.id }})">
                                             <i class="fas fa-edit"></i> 编辑信息</a></li>
-                                        <li><a class="dropdown-item" href="#" onclick="assignClass({{ student.id }})">
+                                        <li><a class="dropdown-item" href="#" onclick="assignClass({{ item.student.id }})">
                                             <i class="fas fa-users"></i> 分配班级</a></li>
                                         <li><hr class="dropdown-divider"></li>
-                                        <li><a class="dropdown-item" href="#" onclick="viewProgress({{ student.id }})">
+                                        <li><a class="dropdown-item" href="#" onclick="viewProgress({{ item.student.id }})">
                                             <i class="fas fa-chart-line"></i> 学习进度</a></li>
-                                        <li><a class="dropdown-item" href="#" onclick="viewGrades({{ student.id }})">
+                                        <li><a class="dropdown-item" href="#" onclick="viewGrades({{ item.student.id }})">
                                             <i class="fas fa-star"></i> 成绩记录</a></li>
                                     </ul>
                                 </div>

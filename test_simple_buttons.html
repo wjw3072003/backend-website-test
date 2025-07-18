@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>按钮测试页面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .button-group {
+            margin: 20px 0;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+        .btn-login {
+            background-color: #222;
+            color: white;
+        }
+        .btn-login:hover {
+            background-color: #333;
+        }
+        .btn-register {
+            background-color: #ff5d47;
+            color: white;
+        }
+        .btn-register:hover {
+            background-color: #e54d37;
+        }
+        .test-info {
+            background-color: #e8f4fd;
+            border: 1px solid #b3d9ff;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .status.success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .status.error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 按钮功能测试页面</h1>
+        
+        <div class="test-info">
+            <h3>测试说明：</h3>
+            <p>这个页面用于测试按钮跳转功能是否正常工作。点击下面的按钮应该能跳转到对应的页面。</p>
+        </div>
+
+        <div class="status success">
+            ✅ 当前页面：测试页面
+        </div>
+
+        <h2>导航栏按钮测试</h2>
+        <div class="button-group">
+            <button class="btn btn-login" onclick="window.location.href='/auth/login'">
+                Sign In
+            </button>
+            <button class="btn btn-register" onclick="window.location.href='/auth/register'">
+                Start Free Trial
+            </button>
+        </div>
+
+        <h2>页面内容按钮测试</h2>
+        <div class="button-group">
+            <button class="btn btn-register" onclick="window.location.href='/auth/register'">
+                Start for Free
+            </button>
+            <button class="btn btn-register" onclick="window.location.href='/auth/register'">
+                Start Free Trial (Gold)
+            </button>
+            <button class="btn btn-register" onclick="window.location.href='/auth/register'">
+                Start Free Trial (Platinum)
+            </button>
+        </div>
+
+        <h2>其他页面测试</h2>
+        <div class="button-group">
+            <a href="/" class="btn btn-login">返回主页</a>
+            <a href="/index_back" class="btn btn-login">备用首页</a>
+        </div>
+
+        <div class="test-info">
+            <h3>测试步骤：</h3>
+            <ol>
+                <li>点击 "Sign In" 按钮 → 应该跳转到登录页面</li>
+                <li>点击 "Start Free Trial" 按钮 → 应该跳转到注册页面</li>
+                <li>如果按钮没有反应，请检查浏览器控制台是否有错误</li>
+            </ol>
+        </div>
+
+        <div id="test-results">
+            <h3>测试结果：</h3>
+            <div id="results-content">
+                等待测试...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 测试脚本
+        document.addEventListener('DOMContentLoaded', function() {
+            const resultsDiv = document.getElementById('results-content');
+            
+            // 测试按钮点击事件
+            const buttons = document.querySelectorAll('button[onclick]');
+            let testResults = [];
+            
+            buttons.forEach(function(button, index) {
+                const originalOnclick = button.getAttribute('onclick');
+                const buttonText = button.textContent.trim();
+                
+                // 添加测试点击事件
+                button.addEventListener('click', function(e) {
+                    testResults.push(`✅ 按钮 "${buttonText}" 点击成功`);
+                    updateResults();
+                    
+                    // 延迟执行原始onclick，让测试结果显示
+                    setTimeout(function() {
+                        try {
+                            eval(originalOnclick);
+                        } catch (error) {
+                            testResults.push(`❌ 按钮 "${buttonText}" 跳转失败: ${error.message}`);
+                            updateResults();
+                        }
+                    }, 1000);
+                });
+            });
+            
+            function updateResults() {
+                resultsDiv.innerHTML = testResults.map(result => `<div>${result}</div>`).join('');
+            }
+            
+            // 页面加载完成
+            testResults.push('✅ 页面加载完成');
+            testResults.push(`✅ 找到 ${buttons.length} 个可点击按钮`);
+            updateResults();
+        });
+    </script>
+</body>
+</html> 

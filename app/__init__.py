@@ -6,6 +6,7 @@ from flask_login import LoginManager
 from flask_mail import Mail
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
+from flask_babel import Babel
 import redis
 from config import config
 
@@ -15,6 +16,7 @@ migrate = Migrate()
 login_manager = LoginManager()
 mail = Mail()
 jwt = JWTManager()
+babel = Babel()
 redis_client = None
 
 def create_app(config_name=None):
@@ -32,6 +34,30 @@ def create_app(config_name=None):
     mail.init_app(app)
     jwt.init_app(app)
     CORS(app)
+    
+    # 定义语言选择器函数
+    def get_locale():
+        """获取当前语言"""
+        from flask import request, session
+        from flask_login import current_user
+        
+        # 优先使用URL参数中的语言
+        if request.args.get('lang'):
+            return request.args.get('lang')
+        
+        # 其次使用session中保存的语言
+        if session.get('lang'):
+            return session.get('lang')
+        
+        # 再次使用用户设置的语言
+        if current_user.is_authenticated and hasattr(current_user, 'language'):
+            return current_user.language
+        
+        # 最后使用浏览器语言
+        return request.accept_languages.best_match(['zh_CN', 'zh_TW', 'en'])
+    
+    # 初始化Babel并设置语言选择器
+    babel.init_app(app, locale_selector=get_locale)
     
     # 配置登录管理器
     login_manager.login_view = 'auth.login'
@@ -57,6 +83,9 @@ def create_app(config_name=None):
     
     from app.routes.teacher import teacher as teacher_blueprint
     app.register_blueprint(teacher_blueprint, url_prefix='/teacher')
+    
+    from app.routes.i18n import i18n as i18n_blueprint
+    app.register_blueprint(i18n_blueprint, url_prefix='/i18n')
     
     # 导入模型以确保数据表创建
     from app.models.user import User, Role

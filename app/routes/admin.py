@@ -11,7 +11,7 @@ admin = Blueprint('admin', __name__)
 
 @admin.route('/')
 @login_required
-@roles_required('admin', 'teacher')
+@roles_required('admin')
 def dashboard():
     """管理员仪表板"""
     # 基本统计数据
@@ -24,7 +24,6 @@ def dashboard():
     # 时间范围统计
     now = datetime.utcnow()
     seven_days_ago = now - timedelta(days=7)
-    thirty_days_ago = now - timedelta(days=30)
     this_month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     
     # 最近活动统计
@@ -38,27 +37,21 @@ def dashboard():
     # 练习趋势数据（最近30天每天的练习记录数）
     trend_data = []
     for i in range(30):
-        day_start = (now - timedelta(days=i)).replace(hour=0, minute=0, second=0, microsecond=0)
-        day_end = day_start + timedelta(days=1)
-        day_count = PracticeRecord.query.filter(
-            PracticeRecord.created_at >= day_start,
-            PracticeRecord.created_at < day_end
+        date = now - timedelta(days=i)
+        start_of_day = date.replace(hour=0, minute=0, second=0, microsecond=0)
+        end_of_day = start_of_day + timedelta(days=1)
+        
+        daily_records = PracticeRecord.query.filter(
+            PracticeRecord.created_at >= start_of_day,
+            PracticeRecord.created_at < end_of_day
         ).count()
+        
         trend_data.append({
-            'date': day_start.strftime('%m-%d'),
-            'count': day_count
+            'date': date.strftime('%m-%d'),
+            'count': daily_records
         })
     
-    # 反转数据，使最早的日期在前面
-    trend_data.reverse()
-    
-    # 热门练习曲目（按练习次数排序）
-    popular_practices = db.session.query(
-        Practice.title,
-        db.func.count(PracticeRecord.id).label('practice_count')
-    ).join(PracticeRecord).group_by(Practice.id).order_by(
-        db.desc('practice_count')
-    ).limit(5).all()
+    trend_data.reverse()  # 按时间顺序排列
     
     stats = {
         'total_users': total_users,
@@ -70,8 +63,7 @@ def dashboard():
         'new_records_week': new_records_week,
         'monthly_records': monthly_records,
         'recent_users': recent_users,
-        'trend_data': trend_data,
-        'popular_practices': popular_practices
+        'trend_data': trend_data
     }
     
     return render_template('admin/dashboard.html', stats=stats)
@@ -455,6 +447,7 @@ def practices():
     if genre:
         query = query.filter_by(genre=genre)
     
+    # 老师和管理员都能看到所有曲目，不做teacher_id筛选
     practices = query.order_by(Practice.created_at.desc())\
         .paginate(page=page, per_page=per_page, error_out=False)
     
@@ -562,6 +555,10 @@ def practice_records():
     
     if date_to:
         query = query.filter(PracticeRecord.created_at <= datetime.strptime(date_to, '%Y-%m-%d'))
+    
+    # 权限过滤
+    if current_user.has_role('teacher') and not current_user.has_role('admin'):
+        query = query.filter(User.teacher_id == current_user.id)
     
     records = query.order_by(PracticeRecord.created_at.desc())\
         .paginate(page=page, per_page=per_page, error_out=False)

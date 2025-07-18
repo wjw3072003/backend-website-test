@@ -8,7 +8,12 @@ main = Blueprint('main', __name__)
 
 @main.route('/')
 def index():
-    """首页"""
+    """默认主页 - 重定向到AI MusPal新首页"""
+    return redirect(url_for('main.aimuspal_homepage'))
+
+@main.route('/index_back')
+def index_back():
+    """备用首页 - 原来的首页"""
     return render_template('index.html')
 
 @main.route('/aimuspal')
@@ -23,6 +28,10 @@ def aimuspal_homepage():
 @login_required
 def dashboard():
     """用户仪表板"""
+    # 如果是老师，重定向到老师仪表板
+    if current_user.has_role('teacher'):
+        return redirect(url_for('teacher.dashboard'))
+    
     from datetime import datetime, timedelta
     from app.utils.cache import get_stats_cache, set_stats_cache, get_common_cache
     
@@ -89,6 +98,10 @@ def dashboard():
 @login_required
 def practices():
     """练习曲目列表"""
+    # 如果是老师，重定向到老师仪表板
+    if current_user.has_role('teacher'):
+        return redirect(url_for('teacher.dashboard'))
+    
     # 获取搜索和筛选参数
     search = request.args.get('search', '').strip()
     difficulty = request.args.get('difficulty', type=int)
@@ -198,7 +211,7 @@ def practices():
         'genre': genre,
         'composer': composer,
         'sort': sort_by
-    }
+            }
     
     return render_template('practices.html', 
                          practices=practices,
@@ -214,6 +227,10 @@ def practices():
 @login_required
 def practice_detail(practice_id):
     """练习曲目详情页面"""
+    # 如果是老师，重定向到老师仪表板
+    if current_user.has_role('teacher'):
+        return redirect(url_for('teacher.dashboard'))
+    
     practice = Practice.query.get_or_404(practice_id)
     
     if not practice.is_active:
@@ -247,6 +264,10 @@ def practice_detail(practice_id):
 @login_required
 def practice_upload(practice_id):
     """练习音频上传页面"""
+    # 如果是老师，重定向到老师仪表板
+    if current_user.has_role('teacher'):
+        return redirect(url_for('teacher.dashboard'))
+    
     practice = Practice.query.get_or_404(practice_id)
     
     if not practice.is_active:
@@ -340,6 +361,10 @@ def practice_upload(practice_id):
 @login_required
 def practice_result(record_id):
     """练习结果页面"""
+    # 如果是老师，重定向到老师仪表板
+    if current_user.has_role('teacher'):
+        return redirect(url_for('teacher.dashboard'))
+    
     record = PracticeRecord.query.filter_by(
         id=record_id, 
         user_id=current_user.id
@@ -351,6 +376,10 @@ def practice_result(record_id):
 @login_required
 def user_stats():
     """用户统计页面"""
+    # 如果是老师，重定向到老师仪表板
+    if current_user.has_role('teacher'):
+        return redirect(url_for('teacher.dashboard'))
+    
     from datetime import datetime, timedelta
     import calendar
     
@@ -489,6 +518,10 @@ def user_stats():
 @login_required
 def practice_records():
     """练习记录列表页面"""
+    # 如果是老师，重定向到老师仪表板
+    if current_user.has_role('teacher'):
+        return redirect(url_for('teacher.dashboard'))
+    
     from datetime import datetime, timedelta
     
     # 获取分页参数
@@ -688,3 +721,15 @@ def health_check():
         'service': 'aimuspal-web',
         'version': '1.0.0'
     })
+
+@main.route('/test-buttons')
+def test_buttons():
+    """按钮测试页面"""
+    import os
+    return send_file(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'test_simple_buttons.html'))
+
+@main.route('/button-test')
+def button_test():
+    """按钮功能测试页面"""
+    import os
+    return send_file(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'button_test.html'))

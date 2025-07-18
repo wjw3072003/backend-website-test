@@ -1,0 +1,375 @@
+# Chinese (Simplified) translations for PROJECT.
+# Copyright (C) 2024 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2024.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION
+"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS
+"
+"POT-Creation-Date: 2024-07-18 04:13+0000
+"
+"PO-Revision-Date: 2024-07-18 04:13+0000
+"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>
+"
+"Language: zh_CN
+"
+"MIME-Version: 1.0
+"
+"Content-Type: text/plain; charset=UTF-8
+"
+"Content-Transfer-Encoding: 8bit
+"
+"Generated-By: Babel 2.13.1
+"
+
+msgid "首页"
+msgstr "首页"
+
+msgid "仪表板"
+msgstr "仪表板"
+
+msgid "练习曲目"
+msgstr "练习曲目"
+
+msgid "学习统计"
+msgstr "学习统计"
+
+msgid "管理后台"
+msgstr "管理后台"
+
+msgid "老师后台"
+msgstr "老师后台"
+
+msgid "关于"
+msgstr "关于"
+
+msgid "登录"
+msgstr "登录"
+
+msgid "注册"
+msgstr "注册"
+
+msgid "个人资料"
+msgstr "个人资料"
+
+msgid "登出"
+msgstr "登出"
+
+msgid "联系我们"
+msgstr "联系我们"
+
+msgid "隐私政策"
+msgstr "隐私政策"
+
+msgid "服务条款"
+msgstr "服务条款"
+
+msgid "语言设置"
+msgstr "语言设置"
+
+msgid "当前语言"
+msgstr "当前语言"
+
+msgid "当前系统语言："
+msgstr "当前系统语言："
+
+msgid "AiMusPal - AI音乐教育平台"
+msgstr "AiMusPal - AI音乐教育平台"
+
+msgid "智能音乐教育平台"
+msgstr "智能音乐教育平台"
+
+msgid "使用AI技术分析您的音乐练习，提供个性化反馈，让音乐学习更高效、更有趣。"
+msgstr "使用AI技术分析您的音乐练习，提供个性化反馈，让音乐学习更高效、更有趣。"
+
+msgid "立即注册"
+msgstr "立即注册"
+
+msgid "进入仪表板"
+msgstr "进入仪表板"
+
+msgid "开始练习"
+msgstr "开始练习"
+
+msgid "平台特色"
+msgstr "平台特色"
+
+msgid "AI驱动的音乐教育解决方案"
+msgstr "AI驱动的音乐教育解决方案"
+
+msgid "AI智能分析"
+msgstr "AI智能分析"
+
+msgid "先进的AI技术实时分析您的演奏，从节拍、音准、节奏等多个维度提供精准评估。"
+msgstr "先进的AI技术实时分析您的演奏，从节拍、音准、节奏等多个维度提供精准评估。"
+
+msgid "个性化反馈"
+msgstr "个性化反馈"
+
+msgid "根据您的演奏水平和学习进度，提供量身定制的练习建议和改进方案。"
+msgstr "根据您的演奏水平和学习进度，提供量身定制的练习建议和改进方案。"
+
+msgid "学习追踪"
+msgstr "学习追踪"
+
+msgid "详细记录您的学习历程，可视化展示进步轨迹，让每一次练习都有明确目标。"
+msgstr "详细记录您的学习历程，可视化展示进步轨迹，让每一次练习都有明确目标。"
+
+msgid "如何使用"
+msgstr "如何使用"
+
+msgid "简单三步，开启智能音乐学习之旅"
+msgstr "简单三步，开启智能音乐学习之旅"
+
+msgid "选择曲目"
+msgstr "选择曲目"
+
+msgid "从我们精心准备的曲库中选择适合您水平的练习曲目"
+msgstr "从我们精心准备的曲库中选择适合您水平的练习曲目"
+
+msgid "录制演奏"
+msgstr "录制演奏"
+
+msgid "使用手机或电脑录制您的演奏音频，上传到平台"
+msgstr "使用手机或电脑录制您的演奏音频，上传到平台"
+
+msgid "获得反馈"
+msgstr "获得反馈"
+
+msgid "AI分析完成后，获得详细的演奏评估和改进建议"
+msgstr "AI分析完成后，获得详细的演奏评估和改进建议"
+
+msgid "注册用户"
+msgstr "注册用户"
+
+msgid "练习记录"
+msgstr "练习记录"
+
+msgid "用户满意度"
+msgstr "用户满意度"
+
+msgid "准备开始您的音乐学习之旅了吗？"
+msgstr "准备开始您的音乐学习之旅了吗？"
+
+msgid "加入我们，体验AI驱动的个性化音乐教育"
+msgstr "加入我们，体验AI驱动的个性化音乐教育"
+
+msgid "免费注册"
+msgstr "免费注册"
+
+msgid "了解更多"
+msgstr "了解更多"
+
+msgid "注册新账户"
+msgstr "注册新账户"
+
+msgid "用户名"
+msgstr "用户名"
+
+msgid "邮箱"
+msgstr "邮箱"
+
+msgid "姓名"
+msgstr "姓名"
+
+msgid "姓氏"
+msgstr "姓氏"
+
+msgid "密码"
+msgstr "密码"
+
+msgid "确认密码"
+msgstr "确认密码"
+
+msgid "注册身份"
+msgstr "注册身份"
+
+msgid "学生"
+msgstr "学生"
+
+msgid "老师"
+msgstr "老师"
+
+msgid "是否有老师推荐码"
+msgstr "是否有老师推荐码"
+
+msgid "有推荐码"
+msgstr "有推荐码"
+
+msgid "无推荐码"
+msgstr "无推荐码"
+
+msgid "老师推荐码"
+msgstr "老师推荐码"
+
+msgid "提示："
+msgstr "提示："
+
+msgid "老师注册不需要推荐码，注册成功后系统会自动为您生成专属推广码。"
+msgstr "老师注册不需要推荐码，注册成功后系统会自动为您生成专属推广码。"
+
+msgid "记住我"
+msgstr "记住我"
+
+msgid "没有账户？"
+msgstr "没有账户？"
+
+msgid "忘记密码？"
+msgstr "忘记密码？"
+
+msgid "已有账户？"
+msgstr "已有账户？"
+
+msgid "学习仪表板"
+msgstr "学习仪表板"
+
+msgid "练习次数"
+msgstr "练习次数"
+
+msgid "练习时长"
+msgstr "练习时长"
+
+msgid "小时"
+msgstr "小时"
+
+msgid "平均分数"
+msgstr "平均分数"
+
+msgid "分"
+msgstr "分"
+
+msgid "本月目标"
+msgstr "本月目标"
+
+msgid "次"
+msgstr "次"
+
+msgid "最近练习记录"
+msgstr "最近练习记录"
+
+msgid "查看全部"
+msgstr "查看全部"
+
+msgid "练习时间"
+msgstr "练习时间"
+
+msgid "分数"
+msgstr "分数"
+
+msgid "状态"
+msgstr "状态"
+
+msgid "操作"
+msgstr "操作"
+
+msgid "已完成"
+msgstr "已完成"
+
+msgid "分析中"
+msgstr "分析中"
+
+msgid "失败"
+msgstr "失败"
+
+msgid "查看"
+msgstr "查看"
+
+msgid "还没有练习记录"
+msgstr "还没有练习记录"
+
+msgid "开始您的第一次练习吧！"
+msgstr "开始您的第一次练习吧！"
+
+msgid "学习目标"
+msgstr "学习目标"
+
+msgid "本月练习目标"
+msgstr "本月练习目标"
+
+msgid "已完成"
+msgstr "已完成"
+
+msgid "次练习"
+msgstr "次练习"
+
+msgid "本周推荐"
+msgstr "本周推荐"
+
+msgid "暂无推荐练习"
+msgstr "暂无推荐练习"
+
+msgid "浏览曲目"
+msgstr "浏览曲目"
+
+msgid "共"
+msgstr "共"
+
+msgid "首曲目"
+msgstr "首曲目"
+
+msgid "您已练习"
+msgstr "您已练习"
+
+msgid "我的记录"
+msgstr "我的记录"
+
+msgid "搜索"
+msgstr "搜索"
+
+msgid "按标题"
+msgstr "按标题"
+
+msgid "按难度"
+msgstr "按难度"
+
+msgid "最新添加"
+msgstr "最新添加"
+
+msgid "所有难度"
+msgstr "所有难度"
+
+msgid "难度"
+msgstr "难度"
+
+msgid "所有风格"
+msgstr "所有风格"
+
+msgid "清除所有筛选"
+msgstr "清除所有筛选"
+
+msgid "作曲家"
+msgstr "作曲家"
+
+msgid "风格"
+msgstr "风格"
+
+msgid "已练习"
+msgstr "已练习"
+
+msgid "最佳"
+msgstr "最佳"
+
+msgid "查看详情"
+msgstr "查看详情"
+
+msgid "上一页"
+msgstr "上一页"
+
+msgid "下一页"
+msgstr "下一页"
+
+msgid "未找到匹配的练习曲目"
+msgstr "未找到匹配的练习曲目"
+
+msgid "没有找到符合当前筛选条件的曲目，试试调整搜索条件"
+msgstr "没有找到符合当前筛选条件的曲目，试试调整搜索条件"
+
+msgid "清除筛选条件"
+msgstr "清除筛选条件"
+
+msgid "管理员还未添加练习曲目，请稍后再来查看。"
+msgstr "管理员还未添加练习曲目，请稍后再来查看。"

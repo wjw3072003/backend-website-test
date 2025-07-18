@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}注册 - AiMusPal{% endblock %}
+{% block title %}{{ _('注册') }} - AiMusPal{% endblock %}
 
 {% block content %}
 <div class="container mt-5">
@@ -8,42 +8,147 @@
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header">
-                    <h3 class="text-center">注册新账户</h3>
+                    <h3 class="text-center">{{ _('注册新账户') }}</h3>
                 </div>
                 <div class="card-body">
-                    <form method="POST">
+                    <form method="POST" action="{{ url_for('auth.register') }}">
                         <div class="mb-3">
-                            <label for="username" class="form-label">用户名</label>
+                            <label for="username" class="form-label">{{ _('用户名') }}</label>
                             <input type="text" class="form-control" id="username" name="username" required>
                         </div>
                         <div class="mb-3">
-                            <label for="email" class="form-label">邮箱</label>
+                            <label for="email" class="form-label">{{ _('邮箱') }}</label>
                             <input type="email" class="form-control" id="email" name="email" required>
                         </div>
                         <div class="mb-3">
-                            <label for="first_name" class="form-label">姓名</label>
+                            <label for="first_name" class="form-label">{{ _('姓名') }}</label>
                             <input type="text" class="form-control" id="first_name" name="first_name" required>
                         </div>
                         <div class="mb-3">
-                            <label for="last_name" class="form-label">姓氏</label>
+                            <label for="last_name" class="form-label">{{ _('姓氏') }}</label>
                             <input type="text" class="form-control" id="last_name" name="last_name" required>
                         </div>
                         <div class="mb-3">
-                            <label for="password" class="form-label">密码</label>
+                            <label for="password" class="form-label">{{ _('密码') }}</label>
                             <input type="password" class="form-control" id="password" name="password" required>
                         </div>
                         <div class="mb-3">
-                            <label for="password2" class="form-label">确认密码</label>
+                            <label for="password2" class="form-label">{{ _('确认密码') }}</label>
                             <input type="password" class="form-control" id="password2" name="password2" required>
                         </div>
-                        <button type="submit" class="btn btn-primary w-100">注册</button>
+                        <div class="mb-3">
+                            <label class="form-label">{{ _('注册身份') }}</label><br>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="user_type" id="studentRadio" value="student" checked onclick="toggleRecommender(true)">
+                                <label class="form-check-label" for="studentRadio">{{ _('学生') }}</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="user_type" id="teacherRadio" value="teacher" onclick="toggleRecommender(false)">
+                                <label class="form-check-label" for="teacherRadio">{{ _('老师') }}</label>
+                            </div>
+                        </div>
+                        <div id="studentRecommenderSection">
+                            <div class="mb-3">
+                                <label class="form-label">{{ _('是否有老师推荐码') }}</label><br>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="has_recommender" id="hasRecommenderYes" value="yes" checked onclick="toggleRecommenderCode(true)">
+                                    <label class="form-check-label" for="hasRecommenderYes">{{ _('有推荐码') }}</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="has_recommender" id="hasRecommenderNo" value="no" onclick="toggleRecommenderCode(false)">
+                                    <label class="form-check-label" for="hasRecommenderNo">{{ _('无推荐码') }}</label>
+                                </div>
+                            </div>
+                            <div class="mb-3" id="recommenderCodeDiv">
+                                <label for="recommender_code" class="form-label">{{ _('老师推荐码') }}</label>
+                                <input type="text" class="form-control" id="recommender_code" name="recommender_code" value="{{ invite_code or '' }}" placeholder="请输入老师推荐码">
+                            </div>
+                        </div>
+                        <div id="teacherNote" class="alert alert-info" style="display: none;">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>{{ _('提示：') }}</strong>{{ _('老师注册不需要推荐码，注册成功后系统会自动为您生成专属推广码。') }}
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">{{ _('注册') }}</button>
                     </form>
                     <div class="text-center mt-3">
-                        <p>已有账户？ <a href="{{ url_for('auth.login') }}">登录</a></p>
+                        <p>{{ _('已有账户？') }} <a href="{{ url_for('auth.login') }}">{{ _('登录') }}</a></p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+function toggleRecommender(isStudent) {
+    const studentSection = document.getElementById('studentRecommenderSection');
+    const teacherNote = document.getElementById('teacherNote');
+    const hasRecommenderYes = document.getElementById('hasRecommenderYes');
+    const hasRecommenderNo = document.getElementById('hasRecommenderNo');
+    const recommenderCode = document.getElementById('recommender_code');
+    
+    if (isStudent) {
+        // 学生模式：显示推荐码相关字段，启用所有选项
+        studentSection.style.display = 'block';
+        teacherNote.style.display = 'none';
+        
+        // 启用所有推荐码相关字段
+        hasRecommenderYes.disabled = false;
+        hasRecommenderNo.disabled = false;
+        recommenderCode.disabled = false;
+        
+        // 恢复样式
+        hasRecommenderYes.parentElement.classList.remove('text-muted');
+        hasRecommenderNo.parentElement.classList.remove('text-muted');
+        recommenderCode.classList.remove('bg-light');
+        
+    } else {
+        // 老师模式：隐藏推荐码相关字段，禁用所有选项
+        studentSection.style.display = 'none';
+        teacherNote.style.display = 'block';
+        
+        // 禁用所有推荐码相关字段
+        hasRecommenderYes.disabled = true;
+        hasRecommenderNo.disabled = true;
+        recommenderCode.disabled = true;
+        
+        // 添加禁用样式
+        hasRecommenderYes.parentElement.classList.add('text-muted');
+        hasRecommenderNo.parentElement.classList.add('text-muted');
+        recommenderCode.classList.add('bg-light');
+        
+        // 清空推荐码输入框
+        recommenderCode.value = '';
+    }
+}
+
+function toggleRecommenderCode(hasCode) {
+    document.getElementById('recommenderCodeDiv').style.display = hasCode ? 'block' : 'none';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // 初始化页面状态
+    toggleRecommender(true);
+    toggleRecommenderCode(true);
+    
+    // 监听角色选择变化
+    document.getElementById('teacherRadio').addEventListener('change', function() {
+        toggleRecommender(false);
+    });
+    
+    document.getElementById('studentRadio').addEventListener('change', function() {
+        toggleRecommender(true);
+    });
+    
+    // 监听推荐码选择变化
+    document.getElementById('hasRecommenderYes').addEventListener('change', function() {
+        toggleRecommenderCode(true);
+    });
+    
+    document.getElementById('hasRecommenderNo').addEventListener('change', function() {
+        toggleRecommenderCode(false);
+    });
+});
+</script>
+
 {% endblock %} 
