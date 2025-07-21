@@ -20,6 +20,7 @@ services:
       - ./app:/app/app
       - ./static:/app/static
       - ./aimuspal_homepage.html:/app/aimuspal_homepage.html
+      - ./aimuspal_homepage_formatted.html:/app/aimuspal_homepage_formatted.html
       - ./config.py:/app/config.py
       - ./app.py:/app/app.py
       - ./requirements.txt:/app/requirements.txt
