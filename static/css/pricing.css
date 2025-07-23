@@ -1,0 +1,294 @@
+/* 定价部分样式 - 完全按照参考网站 https://streamlined-founders-083360.framer.app/ */
+
+.framer-pricing-container {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+.framer-pricing-card {
+    flex: 1;
+    min-width: 280px;
+    max-width: 350px;
+    position: relative;
+}
+
+.framer-card-background {
+    background: white;
+    border-radius: 24px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.framer-card-background:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.12);
+}
+
+.framer-card-content {
+    padding: 32px 24px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.framer-card-header {
+    margin-bottom: 24px;
+}
+
+.framer-plan-title {
+    font-family: "Inter", "Inter Placeholder", sans-serif;
+    font-size: 14px;
+    font-style: italic;
+    font-weight: 700;
+    line-height: 1.5em;
+    color: rgb(102, 102, 102);
+    margin: 0 0 16px 0;
+}
+
+.framer-price-section {
+    margin-bottom: 8px;
+}
+
+.framer-original-price {
+    margin-bottom: 8px;
+}
+
+.framer-strikethrough {
+    font-family: "Inter", "Inter Placeholder", sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: rgb(148, 163, 184);
+    text-decoration: line-through;
+    letter-spacing: -1px;
+    line-height: 1em;
+}
+
+.framer-current-price {
+    margin-bottom: 4px;
+}
+
+.framer-price-amount {
+    font-family: "Inter", "Inter Placeholder", sans-serif;
+    font-size: 35px;
+    font-weight: 700;
+    letter-spacing: -1.8px;
+    line-height: 1em;
+    color: rgb(51, 51, 51);
+}
+
+.framer-price-period {
+    font-family: "Inter", "Inter Placeholder", sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.5em;
+    color: rgb(199, 199, 199);
+    margin: 4px 0 0 0;
+}
+
+.framer-price-subtitle {
+    font-family: "Inter", "Inter Placeholder", sans-serif;
+    font-size: 8px;
+    font-weight: 400;
+    color: rgb(102, 102, 102);
+    margin: 4px 0 0 0;
+}
+
+.framer-pricing-button {
+    width: 100%;
+    padding: 12px 24px;
+    border-radius: 100px;
+    border: none;
+    font-family: "Inter", "Inter Placeholder", sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-bottom: 24px;
+    outline: none;
+}
+
+.framer-pricing-button.btn-outline {
+    background: transparent;
+    border: 1px solid rgb(255, 93, 71);
+    color: rgb(255, 93, 71);
+}
+
+.framer-pricing-button.btn-outline:hover {
+    background: rgb(255, 93, 71);
+    color: white;
+}
+
+.framer-pricing-button.btn-primary {
+    background: rgb(255, 93, 71);
+    color: white;
+}
+
+.framer-pricing-button.btn-primary:hover {
+    background: rgb(230, 70, 50);
+    transform: translateY(-1px);
+}
+
+.framer-button-text {
+    outline: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    flex-shrink: 0;
+    transform: none;
+}
+
+.framer-button-text p {
+    margin: 0;
+}
+
+.framer-features-list {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.framer-feature-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.framer-check-icon {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    margin-top: 2px;
+}
+
+.framer-check-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.framer-feature-text {
+    flex: 1;
+    outline: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    flex-shrink: 0;
+    transform: none;
+}
+
+.framer-feature-text p {
+    font-family: "Inter", "Inter Placeholder", sans-serif;
+    font-size: 14px;
+    line-height: 1.5em;
+    color: rgb(102, 102, 102);
+    margin: 0;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .framer-pricing-container {
+        flex-direction: column;
+        align-items: center;
+        padding: 20px 16px;
+    }
+    
+    .framer-pricing-card {
+        width: 100%;
+        max-width: 400px;
+    }
+    
+    .framer-card-content {
+        padding: 24px 20px;
+    }
+    
+    .framer-price-amount {
+        font-size: 28px;
+    }
+    
+    .framer-strikethrough {
+        font-size: 18px;
+    }
+}
+
+@media (max-width: 480px) {
+    .framer-pricing-container {
+        padding: 16px 12px;
+    }
+    
+    .framer-card-content {
+        padding: 20px 16px;
+    }
+    
+    .framer-price-amount {
+        font-size: 24px;
+    }
+    
+    .framer-strikethrough {
+        font-size: 16px;
+    }
+    
+    .framer-pricing-button {
+        padding: 10px 20px;
+        font-size: 13px;
+    }
+}
+
+/* 特殊样式用于Free计划 */
+.framer-pricing-card[data-plan="free"] .framer-card-background {
+    border: 2px solid rgb(240, 240, 240);
+}
+
+/* 特殊样式用于推荐计划 */
+.framer-pricing-card[data-plan="gold"] .framer-card-background {
+    border: 2px solid rgb(255, 93, 71);
+    position: relative;
+}
+
+.framer-pricing-card[data-plan="gold"] .framer-card-background::before {
+    content: "推荐";
+    position: absolute;
+    top: -1px;
+    right: 24px;
+    background: rgb(255, 93, 71);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 0 0 8px 8px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: "Inter", "Inter Placeholder", sans-serif;
+}
+
+/* 动画效果 */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.framer-pricing-card {
+    animation: fadeInUp 0.6s ease-out forwards;
+}
+
+.framer-pricing-card:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.framer-pricing-card:nth-child(3) {
+    animation-delay: 0.2s;
+} 

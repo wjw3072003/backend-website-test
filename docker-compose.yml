@@ -21,6 +21,7 @@ services:
       - ./static:/app/static
       - ./aimuspal_homepage.html:/app/aimuspal_homepage.html
       - ./aimuspal_homepage_formatted.html:/app/aimuspal_homepage_formatted.html
+      - ./aimuspal_new_homepage.html:/app/aimuspal_new_homepage.html
       - ./config.py:/app/config.py
       - ./app.py:/app/app.py
       - ./requirements.txt:/app/requirements.txt
