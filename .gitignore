@@ -85,3 +85,7 @@ htmlcov/
 # Temporary files
 tmp/
 temp/
+
+# SSL Certificates
+certbot/
+docker-compose.yml

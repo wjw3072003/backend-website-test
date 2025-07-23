@@ -8,8 +8,8 @@ main = Blueprint('main', __name__)
 
 @main.route('/')
 def index():
-    """默认主页 - 重定向到AI MusPal新首页"""
-    return redirect(url_for('main.aimuspal_homepage'))
+    """默认主页 - 重定向到AI MusPal新设计首页"""
+    return redirect(url_for('main.aimuspal_new_homepage'))
 
 @main.route('/index_back')
 def index_back():
@@ -733,3 +733,28 @@ def button_test():
     """按钮功能测试页面"""
     import os
     return send_file(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'button_test.html'))
+
+@main.route('/aimuspal-new')
+def aimuspal_new_homepage():
+    """AI MusPal新设计首页 - 严格按照framer.app设计"""
+    import os
+    from flask import Response
+    
+    file_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'aimuspal_new_homepage.html')
+    
+    # 直接读取文件内容，确保最新版本
+    with open(file_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+    
+    # 添加时间戳用于调试
+    from datetime import datetime
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    content = content.replace('</head>', f'<!-- Generated at: {timestamp} -->\n</head>')
+    
+    # 返回响应，设置不缓存
+    response = Response(content, mimetype='text/html')
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    
+    return response
